@@ -1,0 +1,13 @@
+* {
+    font-family: avenir, arial;
+    transition: 0.5s;
+}
+
+html {
+    width: 400px;
+    height: 400px;
+}
+
+body {
+    background: white;
+}
