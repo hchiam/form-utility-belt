@@ -2,7 +2,7 @@
 
 let data = {
   hostname: "*",
-  submit_selector: "[type='submit']",
+  submit_selector: '[type="submit"]',
   record: "",
   summary: "",
 };
