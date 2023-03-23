@@ -6,7 +6,7 @@
 
 ![version](https://img.shields.io/github/release/hchiam/form-utility-belt?style=flat-square) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://github.com/hchiam/form-utility-belt/blob/main/LICENSE)
 
-Some convenience tools for doing quality assurance of a form.
+Some convenience tools for doing quality assurance of forms.
 
 </div>
 
