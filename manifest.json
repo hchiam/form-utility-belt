@@ -1,19 +1,17 @@
 {
-  "name": "Template Chrome Extension Name",
-  "version": "1.0.0",
-  "description": "Template Chrome extension description",
-  "permissions": [
-    "storage",
-    "unlimitedStorage"
-  ],
-  "browser_action": {
-    "default_popup": "structure.html",
-    "default_icon": {
-      "128": "icon.png"
+  "name": "Form Utility Belt",
+  "description": "Convenience tools for doing quality assurance of a form.",
+  "version": "1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["content.js"]
     }
-  },
-  "icons": {
-    "128": "icon.png"
-  },
-  "manifest_version": 2
+  ],
+  "permissions": ["storage", "unlimitedStorage", "tabs", "activeTab"]
 }
