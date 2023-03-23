@@ -1,33 +1,21 @@
-# Chrome Extension Template
+<div align="center">
 
-- Use this template to create your own Chrome extension.
-- Google what you don't know, but understand any code examples you use.
-- Don't be afraid to ask questions!
+<img src="https://github.com/hchiam/form-utility-belt/raw/main/small_promo.png" height="100">
 
-## Note:
+# Form Utility Belt
 
-This template is old – consider using something like https://github.com/GoogleChrome/chrome-extensions-samples/tree/main/functional-samples/tutorial.hello-world or https://github.com/GoogleChrome/chrome-extensions-samples/tree/main/functional-samples
+![version](https://img.shields.io/github/release/hchiam/form-utility-belt?style=flat-square) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://github.com/hchiam/form-utility-belt/blob/main/LICENSE)
 
-## Conceptual Data Flow:
+Some convenience tools for doing quality assurance of a form.
 
-[manifest.json](https://github.com/hchiam/chrome-extension-template/blob/master/manifest.json)
+</div>
 
--> [structure.html](https://github.com/hchiam/chrome-extension-template/blob/master/structure.html)
+## Features
 
--> [brain.js](https://github.com/hchiam/chrome-extension-template/blob/master/brain.js) (and btw also [style.css](https://github.com/hchiam/chrome-extension-template/blob/master/style.css))
+- Automatically record steps you take in filling out a form. Specify the hostname of sites you want it to be recording for.
+- To replay the steps, copy the JS steps to clipboard and paste them into the DevTools console.
+- Planned: automatically test combinations of inputs - https://github.com/hchiam/form-utility-belt/issues/3
 
--> [structure.html](https://github.com/hchiam/chrome-extension-template/blob/master/structure.html) and [chrome storage (get/set)](https://github.com/hchiam/chrome-extension-template/blob/master/brain.js)
+## Want to create your own Chrome extension?
 
-## Learn more:
-
-https://css-tricks.com/how-to-build-a-chrome-extension
-
-## Examples:
-
-https://github.com/marko-polo-cheno/Habit-Tracker-Extension
-
-https://github.com/hchiam/in-browser-style-linter
-
-## Want to create your own Firefox add-on?
-
-Used this template repo as a starting point: <https://github.com/hchiam/learning-firefox-extension>
+Used this template repo as a starting point: https://github.com/hchiam/chrome-extension-template
