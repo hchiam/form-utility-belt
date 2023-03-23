@@ -1,6 +1,6 @@
 {
   "name": "Form Utility Belt",
-  "description": "Convenience tools for doing quality assurance of a form.",
+  "description": "Convenience tools for doing quality assurance of forms.",
   "version": "1.0",
   "manifest_version": 3,
   "action": {
