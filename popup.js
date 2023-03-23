@@ -8,7 +8,6 @@ let data = {
 };
 
 const defaultHostname = "*";
-let timesHitCopyToClipboard = 0;
 
 const hostnameElement = document.querySelector("#hostname");
 const submitSelectorElement = document.querySelector("#submit_selector");
@@ -45,7 +44,7 @@ function initializeEventsInsidePopupUI() {
     setData(data);
     if (event.key === "Enter" && data.record) {
       copyToClipboard(data.record, () => {
-        alert(`Copied to clipboard (x${timesHitCopyToClipboard})`);
+        alert(`Copied JS recording to clipboard.`);
         window.close();
       });
     }
@@ -53,7 +52,7 @@ function initializeEventsInsidePopupUI() {
   recordElement.addEventListener("click", () => {
     if (data.record) {
       copyToClipboard(data.record, () => {
-        alert(`Copied to clipboard (x${timesHitCopyToClipboard})`);
+        alert(`Copied JS recording to clipboard.`);
         window.close();
       });
     }
@@ -63,7 +62,7 @@ function initializeEventsInsidePopupUI() {
     setData(data);
     if (event.key === "Enter" && data.summary) {
       copyToClipboard(data.summary, () => {
-        alert(`Copied to clipboard (x${timesHitCopyToClipboard})`);
+        alert(`Copied summary to clipboard.`);
         window.close();
       });
     }
@@ -71,7 +70,7 @@ function initializeEventsInsidePopupUI() {
   summaryElement.addEventListener("click", () => {
     if (data.summary) {
       copyToClipboard(data.summary, () => {
-        alert(`Copied to clipboard (x${timesHitCopyToClipboard})`);
+        alert(`Copied summary to clipboard.`);
         window.close();
       });
     }
@@ -124,7 +123,6 @@ function getHostnameFromUrl(url) {
 
 /** original reference: https://github.com/hchiam/clipboard */
 function copyToClipboard(text, callback) {
-  timesHitCopyToClipboard++;
   try {
     navigator.clipboard
       .writeText(text) // if not IE
