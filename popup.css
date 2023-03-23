@@ -97,3 +97,7 @@ button:disabled,
 #hostname {
   width: 25ch;
 }
+
+.d-none {
+  display: none !important;
+}
