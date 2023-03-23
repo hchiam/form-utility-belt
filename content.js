@@ -160,7 +160,3 @@ function record() {
 function log() {
   console.log("FORM UTILITY BELT: \n", ...arguments);
 }
-
-async function sleep(milliseconds) {
-  await new Promise((r) => setTimeout(r, milliseconds || 1000));
-}
