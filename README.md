@@ -1,12 +1,14 @@
 <div align="center">
 
-<img src="https://github.com/hchiam/form-utility-belt/raw/main/small_promo.png" height="100">
+<a href="https://chrome.google.com/webstore/detail/form-utility-belt/hpeggcbpjddkihbnjpbjfllbmecelkbc"><img src="https://github.com/hchiam/form-utility-belt/raw/main/small_promo.png" height="100"></a>
 
-# Form Utility Belt
+# [Form Utility Belt](https://chrome.google.com/webstore/detail/form-utility-belt/hpeggcbpjddkihbnjpbjfllbmecelkbc)
 
 ![version](https://img.shields.io/github/release/hchiam/form-utility-belt?style=flat-square) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://github.com/hchiam/form-utility-belt/blob/main/LICENSE)
 
 Some convenience tools for doing quality assurance of forms.
+
+[Chrome extension](https://chrome.google.com/webstore/detail/form-utility-belt/hpeggcbpjddkihbnjpbjfllbmecelkbc)
 
 </div>
 
