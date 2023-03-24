@@ -3,6 +3,9 @@
   "description": "Convenience tools for doing quality assurance of forms.",
   "version": "1.0",
   "manifest_version": 3,
+  "icons": {
+    "128": "icon.png"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": "icon.png"
