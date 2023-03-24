@@ -1,6 +1,6 @@
 <div align="center">
 
-<a href="https://chrome.google.com/webstore/detail/form-utility-belt/hpeggcbpjddkihbnjpbjfllbmecelkbc"><img src="https://github.com/hchiam/form-utility-belt/raw/main/small_promo.png" height="100"></a>
+<a href="https://chrome.google.com/webstore/detail/form-utility-belt/hpeggcbpjddkihbnjpbjfllbmecelkbc"><img src="https://github.com/hchiam/form-utility-belt/raw/main/icon_128.png" height="100"></a>
 
 # [Form Utility Belt](https://chrome.google.com/webstore/detail/form-utility-belt/hpeggcbpjddkihbnjpbjfllbmecelkbc)
 
