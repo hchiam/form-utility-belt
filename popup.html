@@ -12,12 +12,12 @@
       ><b>Allowed &lt;hostname.com&gt;: </b><br /><i>(* = any website)</i>
       <input
         type="url"
-        id="hostname"
+        id="hostnames"
         value="google.com"
         placeholder="Allowed <hostname.com>"
-        aria-label="hostname"
+        aria-label="hostnames"
     /></label>
-    <label class="d-none"
+    <label
       ><b>Submit button selector: </b><br /><i>e.g., [type="submit"]</i>
       <input
         id="submit_selector"
@@ -25,19 +25,19 @@
         placeholder="Submit button selector"
         value="[type='submit']"
     /></label>
-    <button id="combos" class="d-none">Try all combinations</button>
+    <button id="combos">Try all combinations</button>
     <hr />
     <label for="record"
       ><b>Recorded JS steps: </b><br /><i
-        >(Clears if you revisit and interact with a site with same hostname
-        above. Click to copy to clipboard.)</i
+        >(Clears if you revisit and interact with a site with a hostname above.
+        Click to copy to clipboard.)</i
       ></label
     >
     <p id="record" tabindex="0"></p>
     <label for="summary">
       <b>Summary:</b><br /><i
-        >(Clears if you revisit and interact with a site with same hostname
-        above. Click to copy to clipboard.)</i
+        >(Clears if you revisit and interact with a site with a hostname above.
+        Click to copy to clipboard.)</i
       >
     </label>
     <p id="summary" tabindex="0"></p>

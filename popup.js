@@ -1,15 +1,16 @@
 // this runs in the popup when you click on the extension icon
 
 let data = {
-  hostname: "*",
+  hostnames: ["*"],
   submit_selector: '[type="submit"]',
   record: "",
   summary: "",
+  continueAutomation: false,
 };
 
-const defaultHostname = "*";
+const defaultHostnames = ["*"];
 
-const hostnameElement = document.querySelector("#hostname");
+const hostnamesElement = document.querySelector("#hostnames");
 const submitSelectorElement = document.querySelector("#submit_selector");
 const combosElement = document.querySelector("#combos");
 const recordElement = document.querySelector("#record");
@@ -18,26 +19,32 @@ const summaryElement = document.querySelector("#summary");
 initializeData();
 initializeEventsInsidePopupUI();
 chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
-  const hostname = getHostnameFromUrl(tabData[0].url);
-  enableBasedOnHostname(hostname);
+  const tabHostnames = getHostnamesFromUrlListString(tabData[0].url);
+  enableBasedOnHostnames(tabHostnames);
 });
 
 function initializeEventsInsidePopupUI() {
-  hostnameElement.addEventListener("keyup", () => {
-    let hostname = hostnameElement.value || defaultHostname;
-    hostname = getHostnameFromUrl(hostname);
-    data.hostname = hostname;
-    hostnameElement.value = hostname;
+  hostnamesElement.addEventListener("keyup", () => {
+    let hostnames =
+      [hostnamesElement.value.replaceAll(" ", "")] || defaultHostnames;
+    hostnames = getHostnamesFromUrlListString(hostnames.join(","));
+    data.hostnames = hostnames;
+    hostnamesElement.value = hostnames.join(",");
     setData(data);
     chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
-      const hostname = getHostnameFromUrl(tabData[0].url);
-      enableBasedOnHostname(hostname);
+      const tabHostnames = getHostnamesFromUrlListString(tabData[0].url);
+      enableBasedOnHostnames(tabHostnames);
     });
   });
   submitSelectorElement.addEventListener("keyup", () => {
     const defaultSubmitSelector = "[type='submit']";
     data.submit_selector = submitSelectorElement.value || defaultSubmitSelector;
     setData(data);
+  });
+  combosElement.addEventListener("click", () => {
+    data.continueAutomation = true;
+    setData(data);
+    combos();
   });
   recordElement.addEventListener("keyup", (event) => {
     data.record = recordElement.innerText;
@@ -77,25 +84,35 @@ function initializeEventsInsidePopupUI() {
   });
 }
 
-function initializeData() {
+function initializeData(callback) {
   getData(() => {
-    hostnameElement.value = data.hostname;
+    hostnamesElement.value = data.hostnames.join(",") || defaultHostnames;
     submitSelectorElement.value = data.submit_selector;
     recordElement.innerText = data.record;
     summaryElement.innerText = data.summary;
-    enableBasedOnHostname(data.hostname);
+    if (callback) callback();
   });
 }
 
-function enableBasedOnHostname(hostname) {
-  submitSelectorElement.disabled = !hasSameHostname(hostname);
-  combosElement.disabled = !hasSameHostname(hostname);
-  recordElement.disabled = !hasSameHostname(hostname);
-  summaryElement.disabled = !hasSameHostname(hostname);
+/** param hostnames must be an array */
+function enableBasedOnHostnames(hostnames) {
+  const disable = !isAllowedHostname(hostnames);
+  submitSelectorElement.disabled = disable;
+  combosElement.disabled = disable;
+  recordElement.disabled = disable;
+  summaryElement.disabled = disable;
 }
 
-function hasSameHostname(hostname) {
-  return hostname === "*" || data.hostname.endsWith(hostname);
+/** param hostnames must be an array */
+function isAllowedHostname(hostnames) {
+  if (!Array.isArray(hostnames)) return false;
+  if (data.hostnames[0] === "*") return true;
+  for (let checkingHostname of hostnames) {
+    for (let allowedHostName of data.hostnames) {
+      if (checkingHostname === allowedHostName) return true;
+    }
+  }
+  return false;
 }
 
 function getData(callback) {
@@ -109,16 +126,29 @@ function setData(data) {
   chrome.storage.local.set({ data: data });
 }
 
+function getHostnamesFromUrlListString(urlString) {
+  return urlString.split(",").map((url) => getHostnameFromUrl(url));
+}
+
 function getHostnameFromUrl(url) {
-  if (!url) return defaultHostname;
+  if (!url) return "";
   let hostname = url;
   hostname = hostname.replace(/^https?:\/\//, "").replace(/\/$/, "");
-  // const hasMultipleDots = hostname.match(/\./g).length > 1;
-  // if (hasMultipleDots) {
-  //   hostname = hostname.replace(/\.(?=.*\.)/g, ""); // keep only the last "."
-  // }
+  const hasMultipleDots = hostname.match(/\./g)?.length > 1;
+  if (hasMultipleDots) {
+    hostname = hostname.replace(/.+\.(?=.*\.)/g, ""); // keep only the last "."
+  }
   hostname = hostname.replace(/\/.+/, "");
   return hostname;
+}
+
+function combos() {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
+    const activeTab = tabData[0];
+    chrome.tabs.sendMessage(activeTab.id, {
+      message: "combos",
+    });
+  });
 }
 
 /** original reference: https://github.com/hchiam/clipboard */

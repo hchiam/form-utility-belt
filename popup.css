@@ -94,7 +94,7 @@ button:disabled,
   content: "<Nothing recorded so far.>";
 }
 
-#hostname {
+#hostnames {
   width: 25ch;
 }
 

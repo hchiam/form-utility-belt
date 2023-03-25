@@ -14,7 +14,7 @@ Some convenience tools for doing quality assurance of forms.
 
 ## Features
 
-- Automatically record steps you take in filling out a form. Specify the hostname of sites you want it to be recording for.
+- Automatically record steps you take in filling out a form. Specify the hostnames of sites you want it to be recording for.
 - To replay the steps, copy the JS steps to clipboard and paste them into the DevTools console.
 - Planned: automatically test combinations of inputs - https://github.com/hchiam/form-utility-belt/issues/3
 
