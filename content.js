@@ -289,7 +289,7 @@ async function recursivelyTryCombos(inputs, values, index = 0) {
             `COMBOS: ✅ Can hit submit: ${data.submit_selector}`,
             inputs.map((element) => element[dotValueForType(element.type)])
           );
-          // TODO: do we want to actually do this?
+          // TODO: do we want to actually do this? maybe add a selector or choice of action?
           // $(data.submit_selector).click();
         }
       }
