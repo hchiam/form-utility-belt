@@ -235,6 +235,11 @@ function stopAutomation() {
 }
 
 async function combos() {
+  if (!data.continueAutomation) {
+    stopAutomation();
+    return;
+  }
+
   log("STARTING combos automation.", new Date());
   let currentlyVisibleInputs = getAllVisibleInputs();
   let currentlyAllowedValues = getAllCurrentlyAllowedValues(
