@@ -98,6 +98,11 @@ button:disabled,
   width: 25ch;
 }
 
+#record,
+#summary {
+  white-space: pre;
+}
+
 .d-none {
   display: none !important;
 }
