@@ -253,14 +253,13 @@ async function recursivelyTryCombos(inputs, values, index = 0) {
   await sleep(1000);
   if (data.continueAutomation) {
     const input = inputs[index];
-    const inputAllowedValues = values[index];
-    for (
-      let v = 0;
-      v < inputAllowedValues.length && data.continueAutomation;
-      v++
-    ) {
-      const value = inputAllowedValues[v];
-      input[dotValueForType(dotValueForType(input.type))] = value;
+    const allowedValues = values[index];
+    for (let v = 0; v < allowedValues.length && data.continueAutomation; v++) {
+      const value = allowedValues[v];
+      if (isVisible(input)) {
+        input[dotValueForType(input.type)] = value;
+      }
+      // here be recursion:
       if (index + 1 < inputs.length && data.continueAutomation) {
         await recursivelyTryCombos(inputs, values, index + 1);
       } else if (data.continueAutomation) {
@@ -274,13 +273,21 @@ function getAllVisibleInputs() {
   const possibleFormInputs = `input:not([type="submit"]), select, textarea, button`;
   const submitInputElements = $$(data.submit_selector);
   return [...$$(possibleFormInputs)].filter((element) => {
-    const computedStyles = getComputedStyle(element);
-    return (
-      computedStyles.visibility !== "hidden" &&
-      computedStyles.display !== "none" &&
-      [...submitInputElements].every((sie) => sie !== element)
+    const isNotSubmitInput = [...submitInputElements].every(
+      (submitElement) => submitElement !== element
     );
+    return isVisible(element) && isNotSubmitInput;
   });
+}
+
+function isVisible(element) {
+  const computedStyles = getComputedStyle(element);
+  const submitInputElements = $$(data.submit_selector);
+  return (
+    computedStyles.visibility !== "hidden" &&
+    computedStyles.display !== "none" &&
+    [...submitInputElements].every((sie) => sie !== element)
+  );
 }
 
 function getAllCurrentlyAllowedValues(currentlyVisibleInputs) {
