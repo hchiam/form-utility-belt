@@ -44,6 +44,9 @@ function initializeEventsInsidePopupUI() {
   combosElement.addEventListener("click", () => {
     window.close();
     data.continueAutomation = !data.continueAutomation;
+    combosElement.innerText = data.continueAutomation
+      ? "Try all combinations"
+      : "PAUSE trying all combinations";
     setData(data);
     combos();
   });
@@ -89,6 +92,9 @@ function initializeData(callback) {
   getData(() => {
     hostnamesElement.value = data.hostnames.join(",") || defaultHostnames;
     submitSelectorElement.value = data.submit_selector;
+    combosElement.innerText = data.continueAutomation
+      ? "PAUSE trying all combinations"
+      : "Try all combinations";
     recordElement.innerText = data.record;
     summaryElement.innerText = data.summary;
     if (callback) callback();

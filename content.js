@@ -229,10 +229,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 function stopAutomation() {
   data.continueAutomation = false;
   setData(data);
-  log("Attempting to pause combos automation.");
+  log("Trying to PAUSE combos automation.", new Date());
 }
 
 async function combos() {
+  log("STARTING combos automation.", new Date());
   let currentlyVisibleInputs = getAllVisibleInputs();
   let currentlyAllowedValues = getAllCurrentlyAllowedValues(
     currentlyVisibleInputs
