@@ -249,6 +249,7 @@ async function combos() {
     });
   }, 1000);
   await recursivelyTryCombos(currentlyVisibleInputs, currentlyAllowedValues);
+  log("COMBOS: list of currentlyVisibleInputs", currentlyVisibleInputs);
   stopAutomation();
 }
 
