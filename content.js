@@ -251,7 +251,7 @@ async function combos() {
 }
 
 async function recursivelyTryCombos(inputs, values, index = 0) {
-  await sleep(1000);
+  await sleep();
   if (data.continueAutomation) {
     const input = inputs[index];
     const allowedValues = values[index];
@@ -263,8 +263,27 @@ async function recursivelyTryCombos(inputs, values, index = 0) {
       // here be recursion:
       if (index + 1 < inputs.length && data.continueAutomation) {
         await recursivelyTryCombos(inputs, values, index + 1);
-      } else if (data.continueAutomation) {
-        $(data.submit_selector).click();
+      } else if (/* ready for submit input && */ data.continueAutomation) {
+        if (!isVisible($(data.submit_selector))) {
+          log(
+            `COMBOS: ❌ Submit input isn't visible: ${data.submit_selector}`,
+            $(data.submit_selector),
+            inputs.map((element) => element[dotValueForType(element.type)])
+          );
+        } else if ($(data.submit_selector).disabled) {
+          log(
+            `COMBOS: ❌ Submit input is disabled: ${data.submit_selector}`,
+            $(data.submit_selector),
+            inputs.map((element) => element[dotValueForType(element.type)])
+          );
+        } else {
+          log(
+            `COMBOS: ✅ Can hit submit: ${data.submit_selector}`,
+            inputs.map((element) => element[dotValueForType(element.type)])
+          );
+          // TODO: do we want to actually do this?
+          // $(data.submit_selector).click();
+        }
       }
     }
   }
@@ -283,11 +302,8 @@ function getAllVisibleInputs() {
 
 function isVisible(element) {
   const computedStyles = getComputedStyle(element);
-  const submitInputElements = $$(data.submit_selector);
   return (
-    computedStyles.visibility !== "hidden" &&
-    computedStyles.display !== "none" &&
-    [...submitInputElements].every((sie) => sie !== element)
+    computedStyles.visibility !== "hidden" && computedStyles.display !== "none"
   );
 }
 
