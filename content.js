@@ -229,7 +229,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 function stopAutomation() {
   data.continueAutomation = false;
   setData(data);
-  log("Done combos automation.");
+  log("Attempting to pause combos automation.");
 }
 
 async function combos() {
