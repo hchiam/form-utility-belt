@@ -4,12 +4,13 @@ let data = {
   hostnames: ["*"],
   submit_selector: '[type="submit"]',
   record: "",
+  recordIndex: 0,
   summary: "",
   continueAutomation: false,
 };
 
-const recordPrefix = `async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};
-$=document.querySelector.bind(document);`;
+const recordPrefix = `$=document.querySelector.bind(document);
+async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
 $ = document.querySelector.bind(document);
 $$ = document.querySelectorAll.bind(document);
 async function sleep(ms) {
@@ -78,6 +79,7 @@ function reinitializeRecordUponFirstInteraction() {
 
 function reinitializeRecord() {
   data.record = recordPrefix;
+  data.recordIndex = 0;
   data.summary = "";
   setData(data);
   log("\n\nNew recording started.\n\n\n");
@@ -139,8 +141,11 @@ function record() {
     const action = { selector, value };
     if (index !== undefined) action.index = index;
 
-    const actionCode = convertActionToCode(action);
-    const actionSummary = `${thisSelector} = ${value}\n`;
+    data.recordIndex++;
+    const actionCode = convertActionToCode(action, data.recordIndex);
+    const actionSummary = `${thisSelector} = ${
+      value === value.trim() ? value : `"${value}"`
+    }\n`;
     data.record += data.record ? "\n" + actionCode : actionCode;
     data.summary += actionSummary;
     setData(data);
@@ -183,15 +188,15 @@ function record() {
     return index;
   }
 
-  function convertActionToCode(action) {
-    let type = action.select.match(/\[type="(.+)"\]/) || "";
+  function convertActionToCode(action, recordIndex) {
+    let type = action.selector?.match(/\[type="(.+)"\]/) || "";
     if (type) type = type[0];
     const setValue = dotValueForType(type) || "value";
-    return `await sleep();$('${action.selector}')${
-      action.index ? ".get(" + (action.index + 1) + ")" : ""
-    }.click?.();$('${action.selector}').${setValue}='${action.value}';$('${
-      action.selector
-    }').change?.();`;
+    const selector = `${action.selector}${
+      action.index ? "[" + (action.index + 1) + "]" : ""
+    }`;
+    return `await sleep();var e${recordIndex}=$('${selector}');
+e${recordIndex}.click?.();e${recordIndex}.${setValue}=\`${action.value}\`;e${recordIndex}.change?.();`;
   }
 }
 
