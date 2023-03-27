@@ -14,14 +14,18 @@ body {
   background: black;
   border: solid 2px yellow;
   margin: 0;
-  padding: 1rem;
+  padding: 0 1rem;
 }
 
 h1 {
   background: yellow;
   color: black;
+  margin-block: 0;
   margin-inline: -1rem;
+  padding-block: 0.5rem;
   padding-inline: 1rem;
+  top: 0;
+  width: 100%;
 }
 
 label {
