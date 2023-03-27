@@ -144,7 +144,7 @@ function record() {
     data.recordIndex++;
     const actionCode = convertActionToCode(action, data.recordIndex);
     const actionSummary = `${thisSelector} = ${
-      value === value.trim() ? value : `"${value}"`
+      value === value.trim() && value !== "" ? value : `"${value}"`
     }\n`;
     data.record += data.record ? "\n" + actionCode : actionCode;
     data.summary += actionSummary;
