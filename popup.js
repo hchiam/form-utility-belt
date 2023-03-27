@@ -1,14 +1,15 @@
 // this runs in the popup when you click on the extension icon
 
+const defaultHostnames = ["surge.sh"];
+
 let data = {
-  hostnames: ["*"],
+  hostnames: [...defaultHostnames],
   submit_selector: '[type="submit"]',
   record: "",
+  recordIndex: 0,
   summary: "",
   continueAutomation: false,
 };
-
-const defaultHostnames = ["*"];
 
 const hostnamesElement = document.querySelector("#hostnames");
 const submitSelectorElement = document.querySelector("#submit_selector");

@@ -1,7 +1,9 @@
 // this runs on the current page
 
+const defaultHostnames = ["surge.sh"];
+
 let data = {
-  hostnames: ["*"],
+  hostnames: [...defaultHostnames],
   submit_selector: '[type="submit"]',
   record: "",
   recordIndex: 0,
