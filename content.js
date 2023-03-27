@@ -171,7 +171,7 @@ function record() {
   }
 
   function getActiveOneOnly(selector, element) {
-    const index = 0;
+    let index = 0;
 
     const results = document.querySelectorAll(selector);
     const isUnique = results && results.length < 2;
@@ -207,50 +207,93 @@ function log() {
 function continueAutomation() {
   if (!data.continueAutomation || !hasAllowedHostname()) return;
   alert("TODO: handle continuing automation");
-  // TODO: handle continuing automation
+  // TODO: handle continuing combos() automation where left off before auto-refresh page after each submit
+  // TODO: handle stopping combos() automation if the user doesn't want to continue on refresh
 }
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  try {
-    if (request.message === "combos") {
-      combos();
-    } else {
+  getData(() => {
+    try {
+      if (request.message === "combos") {
+        combos();
+      } else {
+        stopAutomation();
+      }
+    } catch (error) {
+      log(error);
       stopAutomation();
     }
-  } catch (error) {
-    log(error);
-    stopAutomation();
-  }
+  });
 });
 
 function stopAutomation() {
   data.continueAutomation = false;
   setData(data);
+  log("Done combos automation.");
 }
 
-function combos() {
+async function combos() {
   let currentlyVisibleInputs = getAllVisibleInputs();
-  let currentlyAllowedValues = currentlyVisibleInputs.map((element) => {
-    const forSureAllowed = getAllAllowedValues(element);
-    const fallbackValues =
-      !forSureAllowed || !forSureAllowed.length
-        ? [getFallbackValue(element)]
-        : [];
-    return [...forSureAllowed, ...fallbackValues];
-  });
-  log(currentlyAllowedValues);
+  let currentlyAllowedValues = getAllCurrentlyAllowedValues(
+    currentlyVisibleInputs
+  );
+  let timer = setInterval(() => {
+    getData(() => {
+      if (!data.continueAutomation) {
+        clearInterval(timer);
+        stopAutomation();
+      }
+    });
+  }, 1000);
+  await recursivelyTryCombos(currentlyVisibleInputs, currentlyAllowedValues);
   stopAutomation();
 }
 
+async function recursivelyTryCombos(inputs, values, index = 0) {
+  await sleep(1000);
+  if (data.continueAutomation) {
+    const input = inputs[index];
+    const inputAllowedValues = values[index];
+    for (
+      let v = 0;
+      v < inputAllowedValues.length && data.continueAutomation;
+      v++
+    ) {
+      const value = inputAllowedValues[v];
+      input[dotValueForType(dotValueForType(input.type))] = value;
+      if (index + 1 < inputs.length && data.continueAutomation) {
+        await recursivelyTryCombos(inputs, values, index + 1);
+      } else if (data.continueAutomation) {
+        $(data.submit_selector).click();
+      }
+    }
+  }
+}
+
 function getAllVisibleInputs() {
-  const possibleFormInputs = "input, select, textarea, button";
+  const possibleFormInputs = `input:not([type="submit"]), select, textarea, button`;
+  const submitInputElements = $$(data.submit_selector);
   return [...$$(possibleFormInputs)].filter((element) => {
     const computedStyles = getComputedStyle(element);
     return (
       computedStyles.visibility !== "hidden" &&
-      computedStyles.display !== "none"
+      computedStyles.display !== "none" &&
+      [...submitInputElements].every((sie) => sie !== element)
     );
   });
+}
+
+function getAllCurrentlyAllowedValues(currentlyVisibleInputs) {
+  const currentlyAllowedValues = [];
+  currentlyVisibleInputs.forEach((element) => {
+    const forSureAllowed = getAllAllowedValues(element);
+    const fallbackValues =
+      !forSureAllowed || !forSureAllowed.length
+        ? getFallbackValues(element)
+        : [];
+    currentlyAllowedValues.push([...forSureAllowed, ...fallbackValues]);
+  });
+  return currentlyAllowedValues;
 }
 
 function getAllAllowedValues(formInputElement) {
@@ -271,60 +314,64 @@ function dotValueForType(type) {
       return "checked";
     case "date":
       return "valueAsDate";
+    case "submit":
+      return "";
     default:
       return "value";
   }
 }
 
-function getFallbackValue(formInputElement) {
+function getFallbackValues(formInputElement) {
   if (
     formInputElement.tagName !== "INPUT" &&
     formInputElement.tagName !== "TEXTAREA"
   ) {
-    return "test";
+    return ["", "test"];
   }
   const now = new Date();
   const year = now.getFullYear();
   switch (formInputElement.type) {
     case "checkbox":
-      return true;
+      return [false, true];
     case "color":
-      return "#ff0000";
+      return ["", "#ff0000"];
     case "date":
-      return now;
+      return ["", now];
     case "datetime-local":
       now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-      return now.toISOString().slice(0, 16);
+      return ["", now.toISOString().slice(0, 16)];
     case "email":
-      return "test@test.com";
+      return ["", "test@test.com"];
     case "file":
-      return "C:\\fakepath\\test.txt";
+      return ["", "C:\\fakepath\\test.txt"];
     case "month":
       const month = String(now.getMonth()).padStart(2, "0");
-      return `${year}-${month}`;
+      return ["", `${year}-${month}`];
     case "number":
-      return 1;
+      return ["", 1];
     case "password":
-      return "password";
+      return ["", "password"];
     case "radio":
-      return true;
+      return [false, true];
     case "range":
-      return 1;
+      return [1];
     case "search":
-      return "test";
+      return ["", "test"];
+    case "submit":
+      return [""];
     case "tel":
-      return "2345678901";
+      return ["", "2345678901"];
     case "text":
-      return "test";
+      return ["", "test"];
     case "time":
-      return now.toISOString().substring(11, 16);
+      return ["", now.toISOString().substring(11, 16)];
     case "url":
-      return "https://example.com";
+      return ["", "https://example.com"];
     case "week":
       const days = Math.floor((now - year) / (24 * 60 * 60 * 1000));
       const week = Math.ceil((now.getDay() + 1 + days) / 7);
-      return `${year}-W${week}`;
+      return ["", `${year}-W${week}`];
     default:
-      return "test";
+      return ["", "test"];
   }
 }

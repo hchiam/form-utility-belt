@@ -42,7 +42,8 @@ function initializeEventsInsidePopupUI() {
     setData(data);
   });
   combosElement.addEventListener("click", () => {
-    data.continueAutomation = true;
+    window.close();
+    data.continueAutomation = !data.continueAutomation;
     setData(data);
     combos();
   });
