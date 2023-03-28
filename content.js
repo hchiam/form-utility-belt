@@ -262,7 +262,8 @@ async function recursivelyTryCombos(inputs, values, index = 0) {
   await sleep();
   if (data.continueAutomation) {
     const input = inputs[index];
-    const allowedValues = values[index];
+    let allowedValues = values[index];
+    allowedValues = getUniqueValuesForRepeatSubmit(input, allowedValues, index);
     for (let v = 0; v < allowedValues.length && data.continueAutomation; v++) {
       const value = allowedValues[v];
       if (isVisible(input)) {
@@ -405,5 +406,36 @@ function getFallbackValues(formInputElement) {
       return ["", `${year}-W${week}`];
     default:
       return ["", "test"];
+  }
+}
+
+/** must return an array */
+function getUniqueValuesForRepeatSubmit(InputElement, defaultValues, index) {
+  switch (InputElement.type) {
+    case "checkbox":
+    case "color":
+    case "date":
+    case "datetime-local":
+      return defaultValues;
+    case "email":
+      return [`test${index}@test.com`];
+    case "file":
+    case "month":
+    case "number":
+    case "password":
+    case "radio":
+    case "range":
+    case "search":
+    case "submit":
+    case "tel":
+      return defaultValues;
+    case "text":
+      return [`test${index}`];
+    case "time":
+    case "url":
+    case "week":
+      return defaultValues;
+    default:
+      return defaultValues;
   }
 }
