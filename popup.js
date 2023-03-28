@@ -1,43 +1,88 @@
 // this runs in the popup when you click on the extension icon
 
+const defaultHostnames = ["surge.sh"];
+
 let data = {
-  hostname: "*",
+  hostnames: [...defaultHostnames],
   submit_selector: '[type="submit"]',
+  submit_combos: false,
   record: "",
+  recordIndex: 0,
   summary: "",
+  continueAutomation: false,
 };
 
-const defaultHostname = "*";
-
-const hostnameElement = document.querySelector("#hostname");
+const hostnamesElement = document.querySelector("#hostnames");
 const submitSelectorElement = document.querySelector("#submit_selector");
 const combosElement = document.querySelector("#combos");
+const submitCombosElement = document.querySelector("#submit_combos");
+const submitCombosLabelElement = document.querySelector("#submit_combos_label");
 const recordElement = document.querySelector("#record");
 const summaryElement = document.querySelector("#summary");
 
 initializeData();
 initializeEventsInsidePopupUI();
 chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
-  const hostname = getHostnameFromUrl(tabData[0].url);
-  enableBasedOnHostname(hostname);
+  const tabHostnames = getHostnamesFromUrlListString(tabData[0].url);
+  enableBasedOnHostnames(tabHostnames);
 });
 
 function initializeEventsInsidePopupUI() {
-  hostnameElement.addEventListener("keyup", () => {
-    let hostname = hostnameElement.value || defaultHostname;
-    hostname = getHostnameFromUrl(hostname);
-    data.hostname = hostname;
-    hostnameElement.value = hostname;
+  hostnamesElement.addEventListener("keyup", () => {
+    let hostnames =
+      [hostnamesElement.value.replaceAll(" ", "")] || defaultHostnames;
+    hostnames = getHostnamesFromUrlListString(hostnames.join(","));
+    data.hostnames = hostnames;
+    hostnamesElement.value = hostnames.join(",");
     setData(data);
     chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
-      const hostname = getHostnameFromUrl(tabData[0].url);
-      enableBasedOnHostname(hostname);
+      const tabHostnames = getHostnamesFromUrlListString(tabData[0].url);
+      enableBasedOnHostnames(tabHostnames);
     });
   });
   submitSelectorElement.addEventListener("keyup", () => {
     const defaultSubmitSelector = "[type='submit']";
     data.submit_selector = submitSelectorElement.value || defaultSubmitSelector;
     setData(data);
+  });
+  combosElement.addEventListener("click", () => {
+    let yes = true;
+    if (!data.continueAutomation) {
+      yes = confirm(
+        `Do you still want to continue? 
+
+WARNING:  This will automatically try all combinations of values for the elements on this page, and may continue running even if the page refreshes. 
+
+To try to stop it while it's running, hit the "PAUSE trying all combinations" button. 
+
+Do you still want to continue?`
+      );
+    }
+    if (yes) {
+      window.close();
+      data.continueAutomation = !data.continueAutomation;
+      combosElement.innerText = data.continueAutomation
+        ? "Try all combinations"
+        : "PAUSE trying all combinations";
+      setData(data);
+      combos();
+    }
+  });
+  submitCombosElement.addEventListener("change", () => {
+    let yes = true;
+    if (submitCombosElement.checked) {
+      yes = confirm(`Do you still want to continue? 
+
+WARNING:  This will automatically submit all combinations of values if you hit "Try all combinations". 
+
+To try to stop it while it's running, hit the "PAUSE trying all combinations" button. 
+
+Do you still want to continue?`);
+    }
+    if (yes) {
+      data.submit_combos = submitCombosElement.checked;
+      setData(data);
+    }
   });
   recordElement.addEventListener("keyup", (event) => {
     data.record = recordElement.innerText;
@@ -77,25 +122,41 @@ function initializeEventsInsidePopupUI() {
   });
 }
 
-function initializeData() {
+function initializeData(callback) {
   getData(() => {
-    hostnameElement.value = data.hostname;
+    hostnamesElement.value = data.hostnames.join(",") || defaultHostnames;
     submitSelectorElement.value = data.submit_selector;
+    combosElement.innerText = data.continueAutomation
+      ? "PAUSE trying all combinations"
+      : "Try all combinations";
+    submitCombosElement.checked = data.submit_combos;
     recordElement.innerText = data.record;
     summaryElement.innerText = data.summary;
-    enableBasedOnHostname(data.hostname);
+    if (callback) callback();
   });
 }
 
-function enableBasedOnHostname(hostname) {
-  submitSelectorElement.disabled = !hasSameHostname(hostname);
-  combosElement.disabled = !hasSameHostname(hostname);
-  recordElement.disabled = !hasSameHostname(hostname);
-  summaryElement.disabled = !hasSameHostname(hostname);
+/** param hostnames must be an array */
+function enableBasedOnHostnames(hostnames) {
+  const disable = !isAllowedHostname(hostnames);
+  submitSelectorElement.disabled = disable;
+  combosElement.disabled = disable;
+  submitCombosElement.disabled = disable;
+  submitCombosLabelElement.setAttribute("disabled", disable);
+  recordElement.disabled = disable;
+  summaryElement.disabled = disable;
 }
 
-function hasSameHostname(hostname) {
-  return hostname === "*" || data.hostname.endsWith(hostname);
+/** param hostnames must be an array */
+function isAllowedHostname(hostnames) {
+  if (!Array.isArray(hostnames)) return false;
+  if (data.hostnames[0] === "*") return true;
+  for (let checkingHostname of hostnames) {
+    for (let allowedHostName of data.hostnames) {
+      if (checkingHostname === allowedHostName) return true;
+    }
+  }
+  return false;
 }
 
 function getData(callback) {
@@ -109,16 +170,29 @@ function setData(data) {
   chrome.storage.local.set({ data: data });
 }
 
+function getHostnamesFromUrlListString(urlString) {
+  return urlString.split(",").map((url) => getHostnameFromUrl(url));
+}
+
 function getHostnameFromUrl(url) {
-  if (!url) return defaultHostname;
+  if (!url) return "";
   let hostname = url;
   hostname = hostname.replace(/^https?:\/\//, "").replace(/\/$/, "");
-  // const hasMultipleDots = hostname.match(/\./g).length > 1;
-  // if (hasMultipleDots) {
-  //   hostname = hostname.replace(/\.(?=.*\.)/g, ""); // keep only the last "."
-  // }
+  const hasMultipleDots = hostname.match(/\./g)?.length > 1;
+  if (hasMultipleDots) {
+    hostname = hostname.replace(/.+\.(?=.*\.)/g, ""); // keep only the last "."
+  }
   hostname = hostname.replace(/\/.+/, "");
   return hostname;
+}
+
+function combos() {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
+    const activeTab = tabData[0];
+    chrome.tabs.sendMessage(activeTab.id, {
+      message: "combos",
+    });
+  });
 }
 
 /** original reference: https://github.com/hchiam/clipboard */
