@@ -1,10 +1,11 @@
 // this runs on the current page
 
 const defaultHostnames = ["surge.sh"];
+const defaultSubmitSelector = '[type="submit"]';
 
 let data = {
   hostnames: [...defaultHostnames],
-  submit_selector: '[type="submit"]',
+  submit_selector: defaultSubmitSelector,
   record: "",
   recordIndex: 0,
   summary: "",
@@ -254,10 +255,8 @@ async function combos() {
   }
 
   log("STARTING combos automation.", new Date());
-  let currentlyVisibleInputs = getAllVisibleInputs();
-  let currentlyAllowedValues = getAllCurrentlyAllowedValues(
-    currentlyVisibleInputs
-  );
+  let allInputs = getAllInputs();
+  let currentlyAllowedValues = getAllCurrentlyAllowedValues(allInputs);
   let timer = setInterval(() => {
     getData(() => {
       if (!data.continueAutomation) {
@@ -266,8 +265,8 @@ async function combos() {
       }
     });
   }, 1000);
-  await recursivelyTryCombos(currentlyVisibleInputs, currentlyAllowedValues);
-  log("COMBOS: list of currentlyVisibleInputs", currentlyVisibleInputs);
+  await recursivelyTryCombos(allInputs, currentlyAllowedValues);
+  log("COMBOS: list of allInputs", allInputs);
   stopAutomation();
 }
 
@@ -275,15 +274,26 @@ async function recursivelyTryCombos(inputs, values, index = 0) {
   await sleep();
   if (data.continueAutomation) {
     const input = inputs[index];
-    let allowedValues = values[index];
-    allowedValues = getUniqueValuesForRepeatSubmit(input, allowedValues, index);
-    for (let v = 0; v < allowedValues.length && data.continueAutomation; v++) {
-      const value = allowedValues[v];
-      if (isVisible(input)) {
-        input[dotValueForType(input.type)] = value;
+    let allowedVals = values[index];
+    allowedVals = getUniqueValuesForRepeatSubmit(input, allowedVals, index);
+
+    const isInputCurrentlyVisible = isVisible(input);
+    if (!isInputCurrentlyVisible) {
+      await recurse();
+    } else {
+      for (let v = 0; v < allowedVals.length && data.continueAutomation; v++) {
+        const value = allowedVals[v];
+        const isInputCurrentlyVisible = isVisible(input);
+        if (isInputCurrentlyVisible) {
+          input[dotValueForType(input.type)] = value;
+          await recurse();
+        }
       }
-      // here be recursion:
-      if (index + 1 < inputs.length && data.continueAutomation) {
+    }
+
+    async function recurse() {
+      const canRecurse = index + 1 < inputs.length && data.continueAutomation;
+      if (canRecurse) {
         await recursivelyTryCombos(inputs, values, index + 1);
       } else if (/* ready for submit input && */ data.continueAutomation) {
         if (!isVisible($(data.submit_selector))) {
@@ -311,14 +321,14 @@ async function recursivelyTryCombos(inputs, values, index = 0) {
   }
 }
 
-function getAllVisibleInputs() {
+function getAllInputs() {
   const possibleFormInputs = `input:not([type="submit"]), select, textarea, button`;
-  const submitInputElements = $$(data.submit_selector);
+  const submitInputElements = $$(data.submit_selector || defaultSubmitSelector);
   return [...$$(possibleFormInputs)].filter((element) => {
     const isNotSubmitInput = [...submitInputElements].every(
       (submitElement) => submitElement !== element
     );
-    return isVisible(element) && isNotSubmitInput;
+    return /*isVisible(element) &&*/ isNotSubmitInput;
   });
 }
 
@@ -330,9 +340,9 @@ function isVisible(element) {
   );
 }
 
-function getAllCurrentlyAllowedValues(currentlyVisibleInputs) {
+function getAllCurrentlyAllowedValues(allInputs) {
   const currentlyAllowedValues = [];
-  currentlyVisibleInputs.forEach((element) => {
+  allInputs.forEach((element) => {
     const forSureAllowed = getAllAllowedValues(element);
     const fallbackValues =
       !forSureAllowed || !forSureAllowed.length
