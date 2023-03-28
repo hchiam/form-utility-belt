@@ -43,13 +43,25 @@ function initializeEventsInsidePopupUI() {
     setData(data);
   });
   combosElement.addEventListener("click", () => {
-    window.close();
-    data.continueAutomation = !data.continueAutomation;
-    combosElement.innerText = data.continueAutomation
-      ? "Try all combinations"
-      : "PAUSE trying all combinations";
-    setData(data);
-    combos();
+    let yes = true;
+    if (!data.continueAutomation) {
+      yes = confirm(
+        `Do you still want to continue?
+
+WARNING:  This will automatically try all combinations of values for the elements on this page, and may continue running even if the page refreshes. To stop it, hit the "PAUSE trying all combinations" button. 
+
+Do you still want to continue?`
+      );
+    }
+    if (yes) {
+      window.close();
+      data.continueAutomation = !data.continueAutomation;
+      combosElement.innerText = data.continueAutomation
+        ? "Try all combinations"
+        : "PAUSE trying all combinations";
+      setData(data);
+      combos();
+    }
   });
   recordElement.addEventListener("keyup", (event) => {
     data.record = recordElement.innerText;
