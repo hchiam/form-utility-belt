@@ -41,8 +41,10 @@ function getData(callback) {
   });
 }
 
-function setData(data) {
-  chrome.storage.local.set({ data: data });
+function setData(data, callback) {
+  chrome.storage.local.set({ data: data }).then(() => {
+    if (callback) callback();
+  });
 }
 
 function hasAllowedHostname() {
@@ -206,11 +208,22 @@ function log() {
   console.log("FORM UTILITY BELT: \n", ...arguments);
 }
 
-function continueAutomation() {
+async function continueAutomation() {
   if (!data.continueAutomation || !hasAllowedHostname()) return;
-  alert("TODO: handle continuing automation");
-  // TODO: handle continuing combos() automation where left off before auto-refresh page after each submit
-  // TODO: handle stopping combos() automation if the user doesn't want to continue on refresh
+  log("COMBOS: Continuing automation in 3 seconds.");
+  await sleep(3000);
+  if (!$(data.submit_selector)) {
+    const message = `COMBOS: Could not find "${data.submit_selector}". Going back one page in 3 seconds.`;
+    log(message);
+    await sleep(3000);
+    data.continueAutomation = false;
+    setData(data, () => {
+      window.history.back();
+    });
+  } else {
+    // TODO: handle continuing combos() automation where left off before auto-refresh page after each submit
+    // TODO: handle stopping combos() automation if the user doesn't want to continue on refresh
+  }
 }
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
@@ -310,6 +323,7 @@ function getAllVisibleInputs() {
 }
 
 function isVisible(element) {
+  if (!element) return false;
   const computedStyles = getComputedStyle(element);
   return (
     computedStyles.visibility !== "hidden" && computedStyles.display !== "none"
