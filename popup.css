@@ -61,6 +61,8 @@ button {
 }
 
 #record:not(:disabled):not(:empty):hover,
+#submit_combos_label:not([disabled="true"]):hover,
+#submit_combos_label:not([disabled="true"]):focus-within,
 #summary:not(:disabled):not(:empty):hover,
 input:not(:disabled):hover,
 button:not(:disabled):hover {
@@ -105,6 +107,27 @@ button:disabled,
 #record,
 #summary {
   white-space: pre;
+}
+
+#combos,
+#submit_combos {
+  display: inline;
+}
+
+#submit_combos_label {
+  border-radius: 0.3rem;
+  display: inline-flex;
+  height: 100%;
+  margin-inline-start: 0.5rem;
+  padding: 1rem 0.5rem 0.25rem;
+  top: 0;
+}
+
+#submit_combos {
+  bottom: 0;
+  height: 100%;
+  position: relative;
+  vertical-align: middle;
 }
 
 .d-none {

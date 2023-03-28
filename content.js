@@ -6,6 +6,7 @@ const defaultSubmitSelector = '[type="submit"]';
 let data = {
   hostnames: [...defaultHostnames],
   submit_selector: defaultSubmitSelector,
+  submit_combos: false,
   record: "",
   recordIndex: 0,
   summary: "",
@@ -313,8 +314,9 @@ async function recursivelyTryCombos(inputs, values, index = 0) {
             `COMBOS: ✅ Can hit submit: ${data.submit_selector}`,
             inputs.map((element) => element[dotValueForType(element.type)])
           );
-          // TODO: do we want to actually do this? maybe add a selector or choice of action?
-          // $(data.submit_selector).click();
+          if (data.submit_combos) {
+            $(data.submit_selector).click();
+          }
         }
       }
     }

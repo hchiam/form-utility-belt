@@ -5,6 +5,7 @@ const defaultHostnames = ["surge.sh"];
 let data = {
   hostnames: [...defaultHostnames],
   submit_selector: '[type="submit"]',
+  submit_combos: false,
   record: "",
   recordIndex: 0,
   summary: "",
@@ -14,6 +15,8 @@ let data = {
 const hostnamesElement = document.querySelector("#hostnames");
 const submitSelectorElement = document.querySelector("#submit_selector");
 const combosElement = document.querySelector("#combos");
+const submitCombosElement = document.querySelector("#submit_combos");
+const submitCombosLabelElement = document.querySelector("#submit_combos_label");
 const recordElement = document.querySelector("#record");
 const summaryElement = document.querySelector("#summary");
 
@@ -63,6 +66,10 @@ Do you still want to continue?`
       combos();
     }
   });
+  submitCombosElement.addEventListener("change", () => {
+    data.submit_combos = submitCombosElement.checked;
+    setData(data);
+  });
   recordElement.addEventListener("keyup", (event) => {
     data.record = recordElement.innerText;
     setData(data);
@@ -108,6 +115,7 @@ function initializeData(callback) {
     combosElement.innerText = data.continueAutomation
       ? "PAUSE trying all combinations"
       : "Try all combinations";
+    submitCombosElement.checked = data.submit_combos;
     recordElement.innerText = data.record;
     summaryElement.innerText = data.summary;
     if (callback) callback();
@@ -119,6 +127,8 @@ function enableBasedOnHostnames(hostnames) {
   const disable = !isAllowedHostname(hostnames);
   submitSelectorElement.disabled = disable;
   combosElement.disabled = disable;
+  submitCombosElement.disabled = disable;
+  submitCombosLabelElement.setAttribute("disabled", disable);
   recordElement.disabled = disable;
   summaryElement.disabled = disable;
 }
