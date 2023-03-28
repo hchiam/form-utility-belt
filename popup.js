@@ -49,9 +49,11 @@ function initializeEventsInsidePopupUI() {
     let yes = true;
     if (!data.continueAutomation) {
       yes = confirm(
-        `Do you still want to continue?
+        `Do you still want to continue? 
 
-WARNING:  This will automatically try all combinations of values for the elements on this page, and may continue running even if the page refreshes. To stop it, hit the "PAUSE trying all combinations" button. 
+WARNING:  This will automatically try all combinations of values for the elements on this page, and may continue running even if the page refreshes. 
+
+To try to stop it while it's running, hit the "PAUSE trying all combinations" button. 
 
 Do you still want to continue?`
       );
@@ -67,8 +69,20 @@ Do you still want to continue?`
     }
   });
   submitCombosElement.addEventListener("change", () => {
-    data.submit_combos = submitCombosElement.checked;
-    setData(data);
+    let yes = true;
+    if (submitCombosElement.checked) {
+      yes = confirm(`Do you still want to continue? 
+
+WARNING:  This will automatically submit all combinations of values if you hit "Try all combinations". 
+
+To try to stop it while it's running, hit the "PAUSE trying all combinations" button. 
+
+Do you still want to continue?`);
+    }
+    if (yes) {
+      data.submit_combos = submitCombosElement.checked;
+      setData(data);
+    }
   });
   recordElement.addEventListener("keyup", (event) => {
     data.record = recordElement.innerText;
