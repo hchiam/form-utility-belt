@@ -3,20 +3,11 @@
 (async function () {
   const sharedJs = chrome.runtime.getURL("shared.js");
   const shared = await import(sharedJs);
-  shared.test();
 
-  const defaultHostnames = ["surge.sh"];
-  const defaultSubmitSelector = '[type="submit"]';
+  const defaultHostnames = shared.defaultHostnames;
+  const defaultSubmitSelector = shared.defaultSubmitSelector;
 
-  let data = {
-    hostnames: [...defaultHostnames],
-    submit_selector: defaultSubmitSelector,
-    submit_combos: false,
-    record: "",
-    recordIndex: 0,
-    summary: "",
-    continueAutomation: false,
-  };
+  let data = { ...shared.defaultData };
 
   const recordPrefix = `$=document.querySelector.bind(document);
 async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
@@ -29,7 +20,8 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
   setEverythingUp();
 
   function setEverythingUp() {
-    getData(() => {
+    shared.getData((updatedData) => {
+      data = updatedData;
       if (hasAllowedHostname()) {
         reinitializeRecordUponFirstInteraction();
         if (data.continueAutomation) {
@@ -41,45 +33,11 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
     });
   }
 
-  function getData(callback) {
-    chrome.storage.local.get("data", (storageData) => {
-      if (storageData && storageData.data) data = storageData.data;
-      if (callback) callback();
-    });
-  }
-
-  function setData(data, callback) {
-    chrome.storage.local.set({ data: data }).then(() => {
-      if (callback) callback();
-    });
-  }
-
   function hasAllowedHostname() {
-    return isAllowedHostname([getHostnameFromUrl(location.hostname)]);
-  }
-
-  /** param hostnames must be an array */
-  function isAllowedHostname(hostnames) {
-    if (!Array.isArray(hostnames)) return false;
-    if (hostnames[0] === "*") return true;
-    for (let checkingHostname of hostnames) {
-      for (let allowedHostName of data.hostnames) {
-        if (checkingHostname === allowedHostName) return true;
-      }
-    }
-    return false;
-  }
-
-  function getHostnameFromUrl(url) {
-    if (!url) return "";
-    let hostname = url;
-    hostname = hostname.replace(/^https?:\/\//, "").replace(/\/$/, "");
-    const hasMultipleDots = hostname.match(/\./g).length > 1;
-    if (hasMultipleDots) {
-      hostname = hostname.replace(/.+\.(?=.*\.)/g, ""); // keep only the last "."
-    }
-    hostname = hostname.replace(/\/.+/, "");
-    return hostname;
+    return shared.isAllowedHostname(
+      [shared.getHostnameFromUrl(location.hostname)],
+      data.hostnames
+    );
   }
 
   function reinitializeRecordUponFirstInteraction() {
@@ -92,7 +50,7 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
     data.record = recordPrefix;
     data.recordIndex = 0;
     data.summary = "";
-    setData(data);
+    shared.setData(data);
     log("\n\nNew recording started.\n\n\n");
     Array.from(document.querySelectorAll("*")).forEach((element) =>
       element.removeEventListener("change", reinitializeRecord)
@@ -160,7 +118,7 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       }\n`;
       data.record += data.record ? "\n" + actionCode : actionCode;
       data.summary += actionSummary;
-      setData(data);
+      shared.setData(data);
       log(actionSummary);
     }
 
@@ -225,7 +183,7 @@ e${recordIndex}.click?.();e${recordIndex}.${setValue}=\`${action.value}\`;e${rec
       log(message);
       await sleep(3000);
       data.continueAutomation = false;
-      setData(data, () => {
+      shared.setData(data, () => {
         window.history.back();
       });
     } else {
@@ -239,7 +197,8 @@ e${recordIndex}.click?.();e${recordIndex}.${setValue}=\`${action.value}\`;e${rec
     sender,
     sendResponse
   ) {
-    getData(() => {
+    shared.getData((updatedData) => {
+      data = updatedData;
       try {
         if (request.message === "combos") {
           combos();
@@ -255,7 +214,7 @@ e${recordIndex}.click?.();e${recordIndex}.${setValue}=\`${action.value}\`;e${rec
 
   function stopAutomation() {
     data.continueAutomation = false;
-    setData(data);
+    shared.setData(data);
     log("Trying to PAUSE combos automation.", new Date());
   }
 
@@ -269,7 +228,8 @@ e${recordIndex}.click?.();e${recordIndex}.${setValue}=\`${action.value}\`;e${rec
     let allInputs = getAllInputs();
     let currentlyAllowedValues = getAllCurrentlyAllowedValues(allInputs);
     let timer = setInterval(() => {
-      getData(() => {
+      shared.getData((updatedData) => {
+        data = updatedData;
         if (!data.continueAutomation) {
           clearInterval(timer);
           stopAutomation();

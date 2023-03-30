@@ -3,19 +3,11 @@
 (async function () {
   const sharedJs = chrome.runtime.getURL("shared.js");
   const shared = await import(sharedJs);
-  shared.test();
 
-  const defaultHostnames = ["surge.sh"];
+  const defaultHostnames = shared.defaultHostnames;
+  const defaultSubmitSelector = shared.defaultSubmitSelector;
 
-  let data = {
-    hostnames: [...defaultHostnames],
-    submit_selector: '[type="submit"]',
-    submit_combos: false,
-    record: "",
-    recordIndex: 0,
-    summary: "",
-    continueAutomation: false,
-  };
+  let data = { ...shared.defaultData };
 
   const hostnamesElement = document.querySelector("#hostnames");
   const submitSelectorElement = document.querySelector("#submit_selector");
@@ -41,7 +33,7 @@
       hostnames = getHostnamesFromUrlListString(hostnames.join(","));
       data.hostnames = hostnames;
       hostnamesElement.value = hostnames.join(",");
-      setData(data);
+      shared.setData(data);
       chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
         const tabHostnames = getHostnamesFromUrlListString(tabData[0].url);
         enableBasedOnHostnames(tabHostnames);
@@ -51,7 +43,7 @@
       const defaultSubmitSelector = "[type='submit']";
       data.submit_selector =
         submitSelectorElement.value || defaultSubmitSelector;
-      setData(data);
+      shared.setData(data);
     });
     combosElement.addEventListener("click", () => {
       let yes = true;
@@ -67,12 +59,12 @@ Do you still want to continue?`
         );
       }
       if (yes) {
-        window.close();
         data.continueAutomation = !data.continueAutomation;
         combosElement.innerText = data.continueAutomation
-          ? "Try all combinations"
-          : "PAUSE trying all combinations";
-        setData(data);
+          ? "PAUSE trying all combinations"
+          : "Try all combinations";
+        if (!data.continueAutomation) window.close();
+        shared.setData(data);
         combos();
       }
     });
@@ -89,12 +81,12 @@ Do you still want to continue?`);
       }
       if (yes) {
         data.submit_combos = submitCombosElement.checked;
-        setData(data);
+        shared.setData(data);
       }
     });
     recordElement.addEventListener("keyup", (event) => {
       data.record = recordElement.innerText;
-      setData(data);
+      shared.setData(data);
       if (event.key === "Enter" && data.record) {
         copyToClipboard(data.record, () => {
           alert(`Copied JS recording to clipboard.`);
@@ -112,7 +104,7 @@ Do you still want to continue?`);
     });
     summaryElement.addEventListener("keyup", (event) => {
       data.summary = summaryElement.innerText;
-      setData(data);
+      shared.setData(data);
       if (event.key === "Enter" && data.summary) {
         copyToClipboard(data.summary, () => {
           alert(`Copied summary to clipboard.`);
@@ -131,7 +123,8 @@ Do you still want to continue?`);
   }
 
   function initializeData(callback) {
-    getData(() => {
+    shared.getData((updatedData) => {
+      data = updatedData;
       hostnamesElement.value = data.hostnames.join(",") || defaultHostnames;
       submitSelectorElement.value = data.submit_selector;
       combosElement.innerText = data.continueAutomation
@@ -146,7 +139,7 @@ Do you still want to continue?`);
 
   /** param hostnames must be an array */
   function enableBasedOnHostnames(hostnames) {
-    const disable = !isAllowedHostname(hostnames);
+    const disable = !shared.isAllowedHostname(hostnames, data.hostnames);
     submitSelectorElement.disabled = disable;
     combosElement.disabled = disable;
     submitCombosElement.disabled = disable;
@@ -155,43 +148,8 @@ Do you still want to continue?`);
     summaryElement.disabled = disable;
   }
 
-  /** param hostnames must be an array */
-  function isAllowedHostname(hostnames) {
-    if (!Array.isArray(hostnames)) return false;
-    if (data.hostnames[0] === "*") return true;
-    for (let checkingHostname of hostnames) {
-      for (let allowedHostName of data.hostnames) {
-        if (checkingHostname === allowedHostName) return true;
-      }
-    }
-    return false;
-  }
-
-  function getData(callback) {
-    chrome.storage.local.get("data", (storageData) => {
-      if (storageData && storageData.data) data = storageData.data;
-      if (callback) callback();
-    });
-  }
-
-  function setData(data) {
-    chrome.storage.local.set({ data: data });
-  }
-
   function getHostnamesFromUrlListString(urlString) {
-    return urlString.split(",").map((url) => getHostnameFromUrl(url));
-  }
-
-  function getHostnameFromUrl(url) {
-    if (!url) return "";
-    let hostname = url;
-    hostname = hostname.replace(/^https?:\/\//, "").replace(/\/$/, "");
-    const hasMultipleDots = hostname.match(/\./g)?.length > 1;
-    if (hasMultipleDots) {
-      hostname = hostname.replace(/.+\.(?=.*\.)/g, ""); // keep only the last "."
-    }
-    hostname = hostname.replace(/\/.+/, "");
-    return hostname;
+    return urlString.split(",").map((url) => shared.getHostnameFromUrl(url));
   }
 
   function combos() {
