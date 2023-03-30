@@ -9,8 +9,12 @@
 
   let data = { ...shared.defaultData };
 
-  const recordPrefix = `$=document.querySelector.bind(document);
+  const recordPrefix = `const $=document.querySelector.bind(document);
 async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
+  const iifeStart = `;(async function(){\n`;
+  const iifeStartRegex = `;\\(async function\\(\\)\\{\\n`;
+  const iifeEnd = `\n})();`;
+  const iifeEndRegex = `\\n\\}\\)\\(\\);`;
   $ = document.querySelector.bind(document);
   $$ = document.querySelectorAll.bind(document);
   async function sleep(ms) {
@@ -47,7 +51,7 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
   }
 
   function reinitializeRecord() {
-    data.record = recordPrefix;
+    data.record = iifeStart + recordPrefix + iifeEnd;
     data.recordIndex = 0;
     data.summary = "";
     shared.setData(data);
@@ -116,7 +120,12 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       const actionSummary = `${thisSelector} = ${
         value === value.trim() && value !== "" ? value : `"${value}"`
       }\n`;
+
+      data.record = data.record
+        .replace(new RegExp("^" + iifeStartRegex), "")
+        .replace(new RegExp(iifeEndRegex + "$"), "");
       data.record += data.record ? "\n" + actionCode : actionCode;
+      data.record = iifeStart + data.record + iifeEnd;
       data.summary += actionSummary;
       shared.setData(data);
       log(actionSummary);
@@ -165,8 +174,10 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       const selector = `${action.selector}${
         action.index ? "[" + (action.index + 1) + "]" : ""
       }`;
-      return `await sleep();var e${recordIndex}=$('${selector}');
-e${recordIndex}?.click?.();if("${setValue}" in e${recordIndex})e${recordIndex}.${setValue}=\`${action.value}\`;e${recordIndex}?.change?.();`;
+      const value = action.value.replace(/`/g, "\\`");
+      return `await sleep();
+var e${recordIndex}=$('${selector}');
+e${recordIndex}?.click?.();if("${setValue}" in e${recordIndex})e${recordIndex}.${setValue}=\`${value}\`;e${recordIndex}?.change?.();`;
     }
   }
 
