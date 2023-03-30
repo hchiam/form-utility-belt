@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "test": "node shared.test.js"
+  },
+  "type": "module"
+}
