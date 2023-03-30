@@ -8,6 +8,13 @@ test(getHostnameFromUrl("some.test.site/some/path"), "some.test.site");
 test(getHostnameFromUrl("http://some.test.site"), "some.test.site");
 test(getHostnameFromUrl("https://some.test.site"), "some.test.site");
 test(isAllowedHostname(["surge.sh"], ["surge.sh"]), true);
+test(
+  isAllowedHostname(
+    [getHostnameFromUrl("https://hchiam-example-prompts.surge.sh/")],
+    ["surge.sh"]
+  ),
+  true
+);
 test(isAllowedHostname(["surge.sh"], []), false);
 test(isAllowedHostname(["surge.sh"], ["test", "a", "b"]), false);
 test(isAllowedHostname(["surge.sh"], ["test", "a", "b", "surge.sh"]), true);
@@ -24,9 +31,9 @@ function test(actual, expected) {
   console.log(passed ? "✅ passed" : "❌ FAILED");
   if (!passed) {
     fails++;
-    console.log("Actual:", actual);
-    console.log("Expected:", expected);
-    console.log("\n");
+    console.log("    Actual:", actual);
+    console.log("    Expected:", expected);
+    console.log();
   }
 }
 
