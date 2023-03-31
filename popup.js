@@ -82,6 +82,8 @@ Do you still want to continue?`);
       if (yes) {
         data.submit_combos = submitCombosElement.checked;
         shared.setData(data);
+      } else {
+        submitCombosElement.checked = false;
       }
     });
     recordElement.addEventListener("keyup", (event) => {
