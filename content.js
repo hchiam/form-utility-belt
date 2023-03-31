@@ -176,7 +176,6 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
         action.index ? "[" + (action.index + 1) + "]" : ""
       }`;
       const value = action.value.replace(/`/g, "\\`");
-      log("selector", selector);
       return `await sleep();
 var e${recordIndex}=$('${selector}');
 e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex})e${recordIndex}.${setValue}=\`${value}\`;e${recordIndex}?.dispatchEvent?.(new Event('change'));`;
