@@ -96,7 +96,8 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
               x.tagName +
               (x.id ? "#" + x.id : "") +
               (x.className.trim()
-                ? "." + x.className.trim().split(" ").join(".")
+                ? "." +
+                  x.className.trim().replace(/  +/g, " ").split(" ").join(".")
                 : "") +
               (x.type ? `[type="${x.type}"]` : "")
           )
@@ -177,7 +178,7 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       const value = action.value.replace(/`/g, "\\`");
       return `await sleep();
 var e${recordIndex}=$('${selector}');
-e${recordIndex}?.click?.();if("${setValue}" in e${recordIndex})e${recordIndex}.${setValue}=\`${value}\`;e${recordIndex}?.change?.();`;
+e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex})e${recordIndex}.${setValue}=\`${value}\`;e${recordIndex}?.dispatchEvent?.(new Event('change'));`;
     }
   }
 
