@@ -178,7 +178,6 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
         type = element.type;
       }
       const setValue = dotValueForType(type) || "value";
-      log("setValue", setValue);
       const selector = `${action.selector}${
         action.index ? ":nth-of-type(" + (action.index + 1) + ")" : ""
       }`;
