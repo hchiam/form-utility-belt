@@ -117,9 +117,11 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       if (index !== undefined) action.index = index;
 
       data.recordIndex++;
-      const actionCode = convertActionToCode(action, data.recordIndex);
+      const actionCode = convertActionToCode(action, element, data.recordIndex);
       const actionSummary = `${thisSelector} = ${
-        value === value.trim() && value !== "" ? value : `"${value}"`
+        String(value) === String(value).trim() && value !== ""
+          ? value
+          : `"${value}"`
       }\n`;
 
       data.record = data.record
@@ -168,14 +170,22 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       return index;
     }
 
-    function convertActionToCode(action, recordIndex) {
+    function convertActionToCode(action, element, recordIndex) {
       let type = action.selector?.match(/\[type="(.+)"\]/) || "";
-      if (type) type = type[0];
+      if (type) {
+        type = type[0];
+      } else {
+        type = element.type;
+      }
       const setValue = dotValueForType(type) || "value";
+      log("setValue", setValue);
       const selector = `${action.selector}${
         action.index ? "[" + (action.index + 1) + "]" : ""
       }`;
-      const value = action.value.replace(/`/g, "\\`");
+      const value =
+        typeof action.value === "string"
+          ? action.value.replace(/`/g, "\\`")
+          : action.value;
       return `await sleep();
 var e${recordIndex}=$('${selector}');
 e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex})e${recordIndex}.${setValue}=\`${value}\`;e${recordIndex}?.dispatchEvent?.(new Event('change'));`;
