@@ -80,31 +80,9 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
         element.style.display === "none";
       if (isHidden) return;
 
-      const tagName = element.tagName || element.getAttribute("tagName");
+      const thisSelector = getThisSelector(element);
 
-      const thisSelector =
-        (tagName ? tagName : "") +
-        (element.getAttribute("id") ? "#" + element.getAttribute("id") : "") +
-        (element.getAttribute("class")
-          ? "." + element.getAttribute("class").trim().split(" ").join(".")
-          : "");
-
-      let selector =
-        Array.from(getParents(element))
-          .map(
-            (x) =>
-              x.tagName +
-              (x.id ? "#" + x.id : "") +
-              (x.className.trim()
-                ? "." +
-                  x.className.trim().replace(/  +/g, " ").split(" ").join(".")
-                : "") +
-              (x.type ? `[type="${x.type}"]` : "")
-          )
-          .reverse()
-          .join(">") +
-        ">" +
-        thisSelector;
+      const selector = getSelector(element);
 
       if (!selector) {
         log("Couldn't find selector for element:", element);
@@ -132,24 +110,6 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       data.summary += actionSummary;
       shared.setData(data);
       log(actionSummary);
-    }
-
-    function getParents(el, parentSelectorStopAt) {
-      if (parentSelectorStopAt === undefined) {
-        parentSelectorStopAt = document.body;
-      }
-
-      const parents = [];
-      let p = el.parentNode;
-
-      while (p !== parentSelectorStopAt) {
-        const o = p;
-        parents.push(o);
-        p = o.parentNode;
-      }
-
-      if (parentSelectorStopAt) parents.push(parentSelectorStopAt);
-      return parents;
     }
 
     function getActiveOneOnly(selector, element) {
@@ -189,6 +149,60 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
 var e${recordIndex}=$('${selector}');
 e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex})e${recordIndex}.${setValue}=\`${value}\`;e${recordIndex}?.dispatchEvent?.(new Event('change'));`;
     }
+  }
+
+  function getThisSelector(element) {
+    const tagName = element.tagName || element.getAttribute("tagName");
+
+    const thisSelector =
+      (tagName ? tagName : "") +
+      (element.getAttribute("id") ? "#" + element.getAttribute("id") : "") +
+      (element.getAttribute("class")
+        ? "." + element.getAttribute("class").trim().split(" ").join(".")
+        : "");
+
+    return thisSelector;
+  }
+
+  function getSelector(element) {
+    const thisSelector = getThisSelector(element);
+
+    const selector =
+      Array.from(getParents(element))
+        .map(
+          (x) =>
+            x.tagName +
+            (x.id ? "#" + x.id : "") +
+            (x.className.trim()
+              ? "." +
+                x.className.trim().replace(/  +/g, " ").split(" ").join(".")
+              : "") +
+            (x.type ? `[type="${x.type}"]` : "")
+        )
+        .reverse()
+        .join(">") +
+      ">" +
+      thisSelector;
+
+    return selector;
+  }
+
+  function getParents(el, parentSelectorStopAt) {
+    if (parentSelectorStopAt === undefined) {
+      parentSelectorStopAt = document.body;
+    }
+
+    const parents = [];
+    let p = el.parentNode;
+
+    while (p !== parentSelectorStopAt) {
+      const o = p;
+      parents.push(o);
+      p = o.parentNode;
+    }
+
+    if (parentSelectorStopAt) parents.push(parentSelectorStopAt);
+    return parents;
   }
 
   function log() {
@@ -295,13 +309,11 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
           if (!isVisible($(data.submit_selector))) {
             log(
               `COMBOS: ❌ Submit input isn't visible: ${data.submit_selector}`,
-              $(data.submit_selector),
               inputs.map((element) => element[dotValueForType(element.type)])
             );
           } else if ($(data.submit_selector).disabled) {
             log(
               `COMBOS: ❌ Submit input is disabled: ${data.submit_selector}`,
-              $(data.submit_selector),
               inputs.map((element) => element[dotValueForType(element.type)])
             );
           } else {
