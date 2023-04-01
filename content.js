@@ -157,7 +157,7 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
 
       const results = document.querySelectorAll(selector);
       const isUnique = results && results.length < 2;
-      if (isUnique) return index;
+      if (isUnique) return 0;
 
       Array.from(results).filter((x, i) => {
         const isActiveElement = x === element;
@@ -180,7 +180,7 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       const setValue = dotValueForType(type) || "value";
       log("setValue", setValue);
       const selector = `${action.selector}${
-        action.index ? "[" + (action.index + 1) + "]" : ""
+        action.index ? ":nth-of-type(" + (action.index + 1) + ")" : ""
       }`;
       const value =
         typeof action.value === "string"
