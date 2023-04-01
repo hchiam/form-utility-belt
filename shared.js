@@ -43,6 +43,7 @@ export function getHostnameFromUrl(url) {
   hostname = hostname
     .replace(/^https?:/, "")
     .replace(/^\/\//, "")
+    .replace(/:\d*\/?.*/, "")
     .replace(/\/$/, "");
   // const hasMultipleDots = hostname.match(/\./g)?.length > 1;
   // if (hasMultipleDots) {
