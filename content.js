@@ -397,6 +397,8 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       allowedValues = [...$("select").querySelectorAll("option")].map(
         (x) => x.value
       );
+      const uniqueValues = [...new Set(allowedValues)];
+      allowedValues = uniqueValues;
     }
     return allowedValues;
   }
@@ -503,7 +505,6 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
 
   /** allInputs=[HTML elements] and allAllowedValues=[] */
   function getComboNumber(allInputs, allAllowedValues, index = 0) {
-    // TODO: make sure to remove duplicate values somewhere else in the code
     const currentValues = allInputs.map((x) => x[dotValueForType(x.type)]);
     let allowedVals = allInputs.map((input, i) =>
       getUniqueValuesForRepeatSubmit(input, allAllowedValues[i], index)
