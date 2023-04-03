@@ -2,6 +2,8 @@ import {
   getHostnameFromUrl,
   isAllowedHostname,
   getComboNumberFromValues,
+  getValuesFromComboNumber,
+  getRemainingAllowedValuesFromComboNumber,
 } from "./shared.js";
 
 let fails = 0;
@@ -36,12 +38,71 @@ test(isAllowedHostname(["surge.sh"], ["test", "a", "b", "*"]), true);
   test(getComboNumberFromValues(["b", 1], [[...ab], [...numbers]]), 3);
   test(getComboNumberFromValues(["b", 2], [[...ab], [...numbers]]), 4);
   test(getComboNumberFromValues(["b", 3], [[...ab], [...numbers]]), 5);
-  const p = ["", "password"];
-  const i = ["", "test"];
+  const p = ["", "p"];
+  const i = ["", "t"];
   test(getComboNumberFromValues(["", ""], [[...p], [...i]]), 0);
-  test(getComboNumberFromValues(["", "test"], [[...p], [...i]]), 1);
-  test(getComboNumberFromValues(["password", ""], [[...p], [...i]]), 2);
-  test(getComboNumberFromValues(["password", "test"], [[...p], [...i]]), 3);
+  test(getComboNumberFromValues(["", "t"], [[...p], [...i]]), 1);
+  test(getComboNumberFromValues(["p", ""], [[...p], [...i]]), 2);
+  test(getComboNumberFromValues(["p", "t"], [[...p], [...i]]), 3);
+
+  test(
+    getValuesFromComboNumber(0, [[...p], [...i]]).join(","),
+    ["", ""].join(",")
+  );
+  test(
+    getValuesFromComboNumber(1, [[...p], [...i]]).join(","),
+    ["", "t"].join(",")
+  );
+  test(
+    getValuesFromComboNumber(2, [[...p], [...i]]).join(","),
+    ["p", ""].join(",")
+  );
+  test(
+    getValuesFromComboNumber(3, [[...p], [...i]]).join(","),
+    ["p", "t"].join(",")
+  );
+
+  test(getRemainingAllowedValuesFromComboNumber(0, [[...p], [...i]]), [
+    ["", "p"],
+    ["", "t"],
+  ]);
+  test(getRemainingAllowedValuesFromComboNumber(1, [[...p], [...i]]), [
+    ["", "p"],
+    ["", "t"],
+  ]);
+  test(getRemainingAllowedValuesFromComboNumber(2, [[...p], [...i]]), [
+    ["p"],
+    ["", "t"],
+  ]);
+  test(getRemainingAllowedValuesFromComboNumber(3, [[...p], [...i]]), [
+    ["p"],
+    ["t"],
+  ]);
+
+  test(getRemainingAllowedValuesFromComboNumber(0, [[...p], [...numbers]]), [
+    ["", "p"],
+    [1, 2, 3],
+  ]);
+  test(getRemainingAllowedValuesFromComboNumber(1, [[...p], [...numbers]]), [
+    ["", "p"],
+    [1, 2, 3],
+  ]);
+  test(getRemainingAllowedValuesFromComboNumber(2, [[...p], [...numbers]]), [
+    ["", "p"],
+    [1, 2, 3],
+  ]);
+  test(getRemainingAllowedValuesFromComboNumber(3, [[...p], [...numbers]]), [
+    ["p"],
+    [1, 2, 3],
+  ]);
+  test(getRemainingAllowedValuesFromComboNumber(4, [[...p], [...numbers]]), [
+    ["p"],
+    [1, 2, 3],
+  ]);
+  test(getRemainingAllowedValuesFromComboNumber(5, [[...p], [...numbers]]), [
+    ["p"],
+    [3],
+  ]);
 })();
 
 if (fails > 0) {
@@ -51,7 +112,12 @@ if (fails > 0) {
 }
 
 function test(actual, expected) {
-  const passed = actual === expected;
+  let passed = true;
+  if (Array.isArray(actual) || Array.isArray(expected)) {
+    passed &&= handleArray(actual, expected);
+  } else {
+    passed &&= actual === expected;
+  }
   console.log(passed ? "✅ passed" : "❌ FAILED");
   if (!passed) {
     fails++;
@@ -59,6 +125,19 @@ function test(actual, expected) {
     console.log("    Expected:", expected);
     console.log();
   }
+}
+
+function handleArray(actual, expected) {
+  if (Array.isArray(actual) !== Array.isArray(expected)) return false;
+  if (actual.length !== expected.length) return false;
+  for (let i = 0; i < actual.length; i++) {
+    if (Array.isArray(actual[i]) || Array.isArray(expected[i])) {
+      if (!handleArray(actual[i], expected[i])) return false;
+    } else if (actual[i] !== expected[i]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // // jest doesn't seem to work with imports right now

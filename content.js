@@ -231,8 +231,18 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       log("COMBOS: Continuing automation in 3 seconds.");
       await sleep(3000);
       // TODO: handle continuing combos() automation where left off before auto-refresh page after each submit
-      data.comboCount;
-      data.comboAt;
+
+      const allInputs = getAllInputs();
+      const allAllowedValues = getAllAllowedValuesOfAllInputs(allInputs);
+      log(
+        // "shared.getValuesFromComboNumber(data.comboAt)",
+        // shared.getValuesFromComboNumber(data.comboAt),
+        "shared.getRemainingAllowedValuesFromComboNumber(data.comboAt)",
+        shared.getRemainingAllowedValuesFromComboNumber(
+          data.comboAt,
+          allAllowedValues
+        )
+      );
       // TODO: handle stopping combos() automation if the user doesn't want to continue on refresh
     }
   }
@@ -263,7 +273,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     log("Trying to PAUSE combos automation.", new Date());
   }
 
-  async function combos() {
+  async function combos(overrideAllowedValues = null) {
     if (!data.continueAutomation) {
       stopAutomation();
       return;
@@ -272,7 +282,8 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     log("STARTING combos automation.", new Date());
 
     const allInputs = getAllInputs();
-    const allAllowedValues = getAllAllowedValuesOfAllInputs(allInputs);
+    const allAllowedValues =
+      overrideAllowedValues || getAllAllowedValuesOfAllInputs(allInputs);
     data.submitRetriesLeft = 1; // re-init
     data.comboCount = allAllowedValues
       .map((x) => x.length) // otherwise .reduce returns NaN because initialValue=1 wouldn't have .length
@@ -297,7 +308,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   }
 
   async function recursivelyTryCombos(allInputs, allAllowedValues, index = 0) {
-    await sleep();
+    await sleep(1000);
     if (data.continueAutomation) {
       const input = allInputs[index];
       let allowedVals = allAllowedValues[index];
@@ -318,12 +329,14 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
             input[dotValueForType(input.type)] = value;
             data.comboAt = getComboNumber(allInputs, allAllowedValues, index);
             shared.setData(data); // putting recurse() in the callback seems to break the sequence
+            await sleep(1000);
             await recurse();
           }
         }
       }
 
       async function recurse() {
+        console.log(data.comboAt);
         const canRecurse =
           index + 1 < allInputs.length && data.continueAutomation;
         if (canRecurse) {

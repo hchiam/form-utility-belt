@@ -70,3 +70,54 @@ export function getComboNumberFromValues(currentValues, allAllowedValues) {
 
   return comboNumber;
 }
+
+export function getValuesFromComboNumber(comboNumber, allAllowedValues) {
+  const values = [];
+  let factor = 1;
+
+  for (let i = allAllowedValues.length - 1; i >= 0; i--) {
+    factor *= allAllowedValues[i].length;
+  }
+
+  for (let i = 0; i < allAllowedValues.length; i++) {
+    factor /= allAllowedValues[i].length;
+    const index = Math.floor(comboNumber / factor) % allAllowedValues[i].length;
+    values.push(allAllowedValues[i][index]);
+  }
+
+  return values;
+}
+
+export function getRemainingAllowedValuesFromComboNumber(
+  comboNumber,
+  allAllowedValues
+) {
+  if (comboNumber < 0) return allAllowedValues;
+
+  const remainingAllowedValues = [];
+  let quotient = comboNumber;
+  let lastIndexToHitEnd = -1;
+  let minComboNumberOfLastAllowedValue = 0;
+  for (let i = 0; i < allAllowedValues.length; i++) {
+    minComboNumberOfLastAllowedValue += allAllowedValues[i].length - 1;
+    for (let j = i + 1; j < allAllowedValues.length; j++) {
+      minComboNumberOfLastAllowedValue *= allAllowedValues[j].length;
+    }
+    if (comboNumber >= minComboNumberOfLastAllowedValue) {
+      lastIndexToHitEnd = i;
+    }
+  }
+
+  for (let i = allAllowedValues.length - 1; i >= 0; i--) {
+    const values = allAllowedValues[i];
+    const remainder = quotient % values.length;
+    if (remainder === values.length - 1 && lastIndexToHitEnd >= i) {
+      remainingAllowedValues.unshift(values.slice(-1));
+    } else {
+      const sliceStart = lastIndexToHitEnd >= i ? remainder + 1 : 0;
+      remainingAllowedValues.unshift(values.slice(sliceStart));
+    }
+    quotient = Math.floor(quotient / values.length);
+  }
+  return remainingAllowedValues;
+}
