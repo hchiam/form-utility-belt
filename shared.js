@@ -93,15 +93,8 @@ export function getRemainingAllowedValuesFromComboNumber(
   allAllowedValues
 ) {
   if (comboNumber < 0) return allAllowedValues;
-  console.log(comboNumber, allAllowedValues);
 
   const currentValues = getValuesFromComboNumber(comboNumber, allAllowedValues);
-
-  // for (let i = 0; i < currentValues.length; i++) {
-  //   const allowedValuesForSlot = allAllowedValues[i];
-  //   const value = currentValues[i];
-  //   const valueIndex = allowedValuesForSlot.indexOf(value);
-  // }
 
   const remainingAllowedValues = [];
   let quotient = comboNumber;
@@ -112,13 +105,17 @@ export function getRemainingAllowedValuesFromComboNumber(
     for (let j = i + 1; j < allAllowedValues.length; j++) {
       temp *= allAllowedValues[j].length;
     }
-    minComboNumberOfLastAllowedValue += allAllowedValues[i].length - 1;
+    let keep = allAllowedValues[i].length - 1;
+    minComboNumberOfLastAllowedValue += keep;
     minComboNumberOfLastAllowedValue *= temp;
     if (comboNumber >= minComboNumberOfLastAllowedValue) {
       lastIndexToHitEnd = i;
     } else if (lastIndexToHitEnd === i - 1) {
-      // const index = allAllowedValues[i].indexOf(currentValues[i]);
-      // console.log(allAllowedValues[i].slice(index));
+      const indexOfValue = allAllowedValues[i].indexOf(currentValues[i]);
+      const isLastValue = indexOfValue === allAllowedValues[i].length - 1;
+      if (isLastValue) {
+        lastIndexToHitEnd = i;
+      }
     }
   }
 
@@ -130,11 +127,10 @@ export function getRemainingAllowedValuesFromComboNumber(
     } else {
       const index =
         lastIndexToHitEnd === i - 1 ? values.indexOf(currentValues[i]) : 0;
-      console.log(lastIndexToHitEnd, i, values.slice(index));
       const sliceStart = lastIndexToHitEnd >= i ? remainder + 1 : index;
       remainingAllowedValues.unshift(values.slice(sliceStart));
     }
     quotient = Math.floor(quotient / values.length);
   }
-  return remainingAllowedValues;
+  return remainingAllowedValues; // TODO: replace unshift with .push and .reverse()
 }

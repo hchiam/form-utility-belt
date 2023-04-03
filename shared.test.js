@@ -144,6 +144,61 @@ test(isAllowedHostname(["surge.sh"], ["test", "a", "b", "*"]), true);
     ["t"],
     ["b"],
   ]);
+
+  test(
+    getRemainingAllowedValuesFromComboNumber(0, [[...numbers], [...numbers]]),
+    [
+      [1, 2, 3],
+      [1, 2, 3],
+    ]
+  );
+  test(
+    getRemainingAllowedValuesFromComboNumber(1, [[...numbers], [...numbers]]),
+    [
+      [1, 2, 3],
+      [1, 2, 3],
+    ]
+  );
+  test(
+    getRemainingAllowedValuesFromComboNumber(2, [[...numbers], [...numbers]]),
+    [
+      [1, 2, 3],
+      [1, 2, 3],
+    ]
+  );
+  test(
+    getRemainingAllowedValuesFromComboNumber(3, [[...numbers], [...numbers]]),
+    [
+      [2, 3],
+      [1, 2, 3],
+    ]
+  );
+  test(
+    getRemainingAllowedValuesFromComboNumber(4, [[...numbers], [...numbers]]),
+    [
+      [2, 3],
+      [1, 2, 3],
+    ]
+  );
+  test(
+    getRemainingAllowedValuesFromComboNumber(5, [[...numbers], [...numbers]]),
+    [
+      [2, 3],
+      [1, 2, 3],
+    ]
+  );
+  test(
+    getRemainingAllowedValuesFromComboNumber(6, [[...numbers], [...numbers]]),
+    [[3], [1, 2, 3]]
+  );
+  test(
+    getRemainingAllowedValuesFromComboNumber(7, [[...numbers], [...numbers]]),
+    [[3], [2, 3]]
+  );
+  test(
+    getRemainingAllowedValuesFromComboNumber(8, [[...numbers], [...numbers]]),
+    [[3], [3]]
+  );
 })();
 
 if (fails > 0) {
