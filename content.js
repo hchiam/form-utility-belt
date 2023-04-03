@@ -230,20 +230,16 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     } else {
       log("COMBOS: Continuing automation in 3 seconds.");
       await sleep(3000);
-      // TODO: handle continuing combos() automation where left off before auto-refresh page after each submit
 
       const allInputs = getAllInputs();
       const allAllowedValues = getAllAllowedValuesOfAllInputs(allInputs);
-      log(
-        // "shared.getValuesFromComboNumber(data.comboAt)",
-        // shared.getValuesFromComboNumber(data.comboAt),
-        "shared.getRemainingAllowedValuesFromComboNumber(data.comboAt)",
+
+      const remainingAllowedValues =
         shared.getRemainingAllowedValuesFromComboNumber(
           data.comboAt,
           allAllowedValues
-        )
-      );
-      // TODO: handle stopping combos() automation if the user doesn't want to continue on refresh
+        );
+      combos(remainingAllowedValues);
     }
   }
 
@@ -288,7 +284,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     data.comboCount = allAllowedValues
       .map((x) => x.length) // otherwise .reduce returns NaN because initialValue=1 wouldn't have .length
       .reduce((a, b) => a * b);
-    data.comboAt = 0;
+    if (!overrideAllowedValues) data.comboAt = 0;
 
     shared.setData(data, async function () {
       let timer = setInterval(() => {
@@ -308,7 +304,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   }
 
   async function recursivelyTryCombos(allInputs, allAllowedValues, index = 0) {
-    await sleep(1000);
+    await sleep();
     if (data.continueAutomation) {
       const input = allInputs[index];
       let allowedVals = allAllowedValues[index];
@@ -329,14 +325,16 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
             input[dotValueForType(input.type)] = value;
             data.comboAt = getComboNumber(allInputs, allAllowedValues, index);
             shared.setData(data); // putting recurse() in the callback seems to break the sequence
-            await sleep(1000);
+            // shared.setData(data, async function () {
+            // putting recurse() in the callback seems to break the sequence
+            await sleep(); // TODO: remove this
             await recurse();
+            // });
           }
         }
       }
 
       async function recurse() {
-        console.log(data.comboAt);
         const canRecurse =
           index + 1 < allInputs.length && data.continueAutomation;
         if (canRecurse) {
