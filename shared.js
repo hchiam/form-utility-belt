@@ -55,3 +55,18 @@ export function getHostnameFromUrl(url) {
   hostname = hostname.replace(/\/.+$/, "");
   return hostname;
 }
+
+export function getComboNumberFromValues(currentValues, allAllowedValues) {
+  let comboNumber = 0;
+  let multiplier = 1;
+
+  for (let i = currentValues.length - 1; i >= 0; i--) {
+    const allowedValuesForSlot = allAllowedValues[i];
+    const value = currentValues[i];
+    const valueIndex = allowedValuesForSlot.indexOf(value);
+    comboNumber += valueIndex * multiplier;
+    multiplier *= allowedValuesForSlot.length;
+  }
+
+  return comboNumber;
+}

@@ -296,11 +296,11 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     });
   }
 
-  async function recursivelyTryCombos(inputs, values, index = 0) {
+  async function recursivelyTryCombos(allInputs, allAllowedValues, index = 0) {
     await sleep();
     if (data.continueAutomation) {
-      const input = inputs[index];
-      let allowedVals = values[index];
+      const input = allInputs[index];
+      let allowedVals = allAllowedValues[index];
       allowedVals = getUniqueValuesForRepeatSubmit(input, allowedVals, index);
 
       const isInputCurrentlyVisible = isVisible(input);
@@ -315,32 +315,34 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
           const value = allowedVals[v];
           const isInputCurrentlyVisible = isVisible(input);
           if (isInputCurrentlyVisible) {
-            log("data.comboAt", data.comboAt);
             input[dotValueForType(input.type)] = value;
+            data.comboAt = getComboNumber(allInputs, allAllowedValues, index);
+            shared.setData(data); // putting recurse() in the callback seems to break the sequence
             await recurse();
           }
         }
       }
 
       async function recurse() {
-        const canRecurse = index + 1 < inputs.length && data.continueAutomation;
+        const canRecurse =
+          index + 1 < allInputs.length && data.continueAutomation;
         if (canRecurse) {
-          await recursivelyTryCombos(inputs, values, index + 1);
+          await recursivelyTryCombos(allInputs, allAllowedValues, index + 1);
         } else if (/* ready for submit input && */ data.continueAutomation) {
           if (!isVisible($(data.submit_selector))) {
             log(
               `COMBOS: ❌ Submit input isn't visible: ${data.submit_selector}`,
-              inputs.map((element) => element[dotValueForType(element.type)])
+              allInputs.map((element) => element[dotValueForType(element.type)])
             );
           } else if ($(data.submit_selector).disabled) {
             log(
               `COMBOS: ❌ Submit input is disabled: ${data.submit_selector}`,
-              inputs.map((element) => element[dotValueForType(element.type)])
+              allInputs.map((element) => element[dotValueForType(element.type)])
             );
           } else {
             log(
               `COMBOS: ✅ Can hit submit: ${data.submit_selector}`,
-              inputs.map((element) => element[dotValueForType(element.type)])
+              allInputs.map((element) => element[dotValueForType(element.type)])
             );
             if (data.submit_combos) {
               $(data.submit_selector).click();
@@ -475,9 +477,9 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       case "color":
       case "date":
       case "datetime-local":
-        return defaultValues;
+        return [...defaultValues];
       case "email":
-        return [`test${index}@test.com`];
+        return ["", `test${index}@test.com`];
       case "file":
       case "month":
       case "number":
@@ -487,15 +489,26 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       case "search":
       case "submit":
       case "tel":
-        return defaultValues;
+        return [...defaultValues];
       case "text":
-        return [`test${index}`];
+        return ["", `test${index}`];
       case "time":
       case "url":
       case "week":
-        return defaultValues;
+        return [...defaultValues];
       default:
-        return defaultValues;
+        return [...defaultValues];
     }
+  }
+
+  /** allInputs=[HTML elements] and allAllowedValues=[] */
+  function getComboNumber(allInputs, allAllowedValues, index = 0) {
+    // TODO: make sure to remove duplicate values somewhere else in the code
+    const currentValues = allInputs.map((x) => x[dotValueForType(x.type)]);
+    let allowedVals = allInputs.map((input, i) =>
+      getUniqueValuesForRepeatSubmit(input, allAllowedValues[i], index)
+    );
+    // log("currentValues", currentValues, "allowedVals", allowedVals);
+    return shared.getComboNumberFromValues(currentValues, allowedVals);
   }
 })();
