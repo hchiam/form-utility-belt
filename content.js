@@ -225,7 +225,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
           stopAutomation();
         }
       });
-    } else if (data.comboAt >= data.comboCount - 1) {
+    } else if (data.comboAt >= data.comboCount) {
       stopAutomation();
     } else {
       log("COMBOS: Continuing automation in 3 seconds.");
@@ -269,7 +269,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     log("Trying to PAUSE combos automation.", new Date());
   }
 
-  async function combos(overrideAllowedValues = null) {
+  async function combos(currentlyAllowedValues = null) {
     if (!data.continueAutomation) {
       stopAutomation();
       return;
@@ -279,12 +279,12 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
 
     const allInputs = getAllInputs();
     const allAllowedValues =
-      overrideAllowedValues || getAllAllowedValuesOfAllInputs(allInputs);
+      currentlyAllowedValues || getAllAllowedValuesOfAllInputs(allInputs);
     data.submitRetriesLeft = 1; // re-init
     data.comboCount = allAllowedValues
       .map((x) => x.length) // otherwise .reduce returns NaN because initialValue=1 wouldn't have .length
       .reduce((a, b) => a * b);
-    if (!overrideAllowedValues) data.comboAt = 0;
+    if (!currentlyAllowedValues) data.comboAt = 0;
 
     shared.setData(data, async function () {
       let timer = setInterval(() => {
