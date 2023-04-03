@@ -97,11 +97,52 @@ test(isAllowedHostname(["surge.sh"], ["test", "a", "b", "*"]), true);
   ]);
   test(getRemainingAllowedValuesFromComboNumber(4, [[...p], [...numbers]]), [
     ["p"],
-    [1, 2, 3],
+    [2, 3],
   ]);
   test(getRemainingAllowedValuesFromComboNumber(5, [[...p], [...numbers]]), [
     ["p"],
     [3],
+  ]);
+
+  test(getRemainingAllowedValuesFromComboNumber(0, [[...p], [...i], [...ab]]), [
+    ["", "p"],
+    ["", "t"],
+    ["a", "b"],
+  ]);
+  test(getRemainingAllowedValuesFromComboNumber(1, [[...p], [...i], [...ab]]), [
+    ["", "p"],
+    ["", "t"],
+    ["a", "b"],
+  ]);
+  test(getRemainingAllowedValuesFromComboNumber(2, [[...p], [...i], [...ab]]), [
+    ["", "p"],
+    ["", "t"],
+    ["a", "b"],
+  ]);
+  test(getRemainingAllowedValuesFromComboNumber(3, [[...p], [...i], [...ab]]), [
+    ["", "p"],
+    ["", "t"],
+    ["a", "b"],
+  ]);
+  test(getRemainingAllowedValuesFromComboNumber(4, [[...p], [...i], [...ab]]), [
+    ["p"],
+    ["", "t"],
+    ["a", "b"],
+  ]);
+  test(getRemainingAllowedValuesFromComboNumber(5, [[...p], [...i], [...ab]]), [
+    ["p"],
+    ["", "t"],
+    ["a", "b"],
+  ]);
+  test(getRemainingAllowedValuesFromComboNumber(6, [[...p], [...i], [...ab]]), [
+    ["p"],
+    ["t"],
+    ["a", "b"],
+  ]);
+  test(getRemainingAllowedValuesFromComboNumber(7, [[...p], [...i], [...ab]]), [
+    ["p"],
+    ["t"],
+    ["b"],
   ]);
 })();
 

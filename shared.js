@@ -93,18 +93,32 @@ export function getRemainingAllowedValuesFromComboNumber(
   allAllowedValues
 ) {
   if (comboNumber < 0) return allAllowedValues;
+  console.log(comboNumber, allAllowedValues);
+
+  const currentValues = getValuesFromComboNumber(comboNumber, allAllowedValues);
+
+  // for (let i = 0; i < currentValues.length; i++) {
+  //   const allowedValuesForSlot = allAllowedValues[i];
+  //   const value = currentValues[i];
+  //   const valueIndex = allowedValuesForSlot.indexOf(value);
+  // }
 
   const remainingAllowedValues = [];
   let quotient = comboNumber;
   let lastIndexToHitEnd = -1;
   let minComboNumberOfLastAllowedValue = 0;
   for (let i = 0; i < allAllowedValues.length; i++) {
-    minComboNumberOfLastAllowedValue += allAllowedValues[i].length - 1;
+    let temp = 1;
     for (let j = i + 1; j < allAllowedValues.length; j++) {
-      minComboNumberOfLastAllowedValue *= allAllowedValues[j].length;
+      temp *= allAllowedValues[j].length;
     }
+    minComboNumberOfLastAllowedValue += allAllowedValues[i].length - 1;
+    minComboNumberOfLastAllowedValue *= temp;
     if (comboNumber >= minComboNumberOfLastAllowedValue) {
       lastIndexToHitEnd = i;
+    } else if (lastIndexToHitEnd === i - 1) {
+      // const index = allAllowedValues[i].indexOf(currentValues[i]);
+      // console.log(allAllowedValues[i].slice(index));
     }
   }
 
@@ -114,7 +128,10 @@ export function getRemainingAllowedValuesFromComboNumber(
     if (remainder === values.length - 1 && lastIndexToHitEnd >= i) {
       remainingAllowedValues.unshift(values.slice(-1));
     } else {
-      const sliceStart = lastIndexToHitEnd >= i ? remainder + 1 : 0;
+      const index =
+        lastIndexToHitEnd === i - 1 ? values.indexOf(currentValues[i]) : 0;
+      console.log(lastIndexToHitEnd, i, values.slice(index));
+      const sliceStart = lastIndexToHitEnd >= i ? remainder + 1 : index;
       remainingAllowedValues.unshift(values.slice(sliceStart));
     }
     quotient = Math.floor(quotient / values.length);
