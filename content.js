@@ -272,9 +272,9 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     log("STARTING combos automation.", new Date());
 
     const allInputs = getAllInputs();
-    const currentlyAllowedValues = getAllAllowedValuesOfAllInputs(allInputs);
+    const allAllowedValues = getAllAllowedValuesOfAllInputs(allInputs);
     data.submitRetriesLeft = 1; // re-init
-    data.comboCount = currentlyAllowedValues
+    data.comboCount = allAllowedValues
       .map((x) => x.length) // otherwise .reduce returns NaN because initialValue=1 wouldn't have .length
       .reduce((a, b) => a * b);
     data.comboAt = 0;
@@ -290,7 +290,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
         });
       }, 1000);
       log("COMBOS: list of allInputs", allInputs);
-      await recursivelyTryCombos(allInputs, currentlyAllowedValues);
+      await recursivelyTryCombos(allInputs, allAllowedValues);
       log("COMBOS: list of allInputs", allInputs);
       stopAutomation();
     });
@@ -315,6 +315,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
           const value = allowedVals[v];
           const isInputCurrentlyVisible = isVisible(input);
           if (isInputCurrentlyVisible) {
+            log("data.comboAt", data.comboAt);
             input[dotValueForType(input.type)] = value;
             await recurse();
           }
@@ -374,16 +375,16 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
 
   /** param allInputs must be an array of HTML elements */
   function getAllAllowedValuesOfAllInputs(allInputs) {
-    const currentlyAllowedValues = [];
+    const allAllowedValues = [];
     allInputs.forEach((element) => {
       const forSureAllowed = getAllAllowedValues(element);
       const fallbackValues =
         !forSureAllowed || !forSureAllowed.length
           ? getFallbackValues(element)
           : [];
-      currentlyAllowedValues.push([...forSureAllowed, ...fallbackValues]);
+      allAllowedValues.push([...forSureAllowed, ...fallbackValues]);
     });
-    return currentlyAllowedValues;
+    return allAllowedValues;
   }
 
   function getAllAllowedValues(formInputElement) {
