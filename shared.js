@@ -123,14 +123,14 @@ export function getRemainingAllowedValuesFromComboNumber(
     const values = allAllowedValues[i];
     const remainder = quotient % values.length;
     if (remainder === values.length - 1 && lastIndexToHitEnd >= i) {
-      remainingAllowedValues.unshift(values.slice(-1));
+      remainingAllowedValues.push(values.slice(-1));
     } else {
       const index =
         lastIndexToHitEnd === i - 1 ? values.indexOf(currentValues[i]) : 0;
       const sliceStart = lastIndexToHitEnd >= i ? remainder + 1 : index;
-      remainingAllowedValues.unshift(values.slice(sliceStart));
+      remainingAllowedValues.push(values.slice(sliceStart));
     }
     quotient = Math.floor(quotient / values.length);
   }
-  return remainingAllowedValues; // TODO: replace unshift with .push and .reverse()
+  return remainingAllowedValues.reverse();
 }
