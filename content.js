@@ -211,19 +211,35 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
 
   async function continueAutomation() {
     if (!data.continueAutomation || !hasAllowedHostname()) return;
-    log("COMBOS: Continuing automation in 3 seconds.");
-    await sleep(3000);
+
     if (!$(data.submit_selector)) {
-      const message = `COMBOS: Could not find "${data.submit_selector}". Going back one page in 3 seconds.`;
-      log(message);
-      await sleep(3000);
-      data.continueAutomation = false;
-      shared.setData(data, () => {
-        window.history.back();
+      data.continueAutomation = data.submitRetriesLeft > 0;
+      data.submitRetriesLeft = Math.max(0, data.submitRetriesLeft - 1);
+      shared.setData(data, async function () {
+        if (data.continueAutomation) {
+          const message = `COMBOS: Could not find "${data.submit_selector}". Going back one page in 3 seconds.`;
+          log(message);
+          await sleep(3000);
+          window.history.back();
+        } else {
+          stopAutomation();
+        }
       });
+    } else if (data.comboAt >= data.comboCount) {
+      stopAutomation();
     } else {
-      // TODO: handle continuing combos() automation where left off before auto-refresh page after each submit
-      // TODO: handle stopping combos() automation if the user doesn't want to continue on refresh
+      log("COMBOS: Continuing automation in 3 seconds.");
+      await sleep(3000);
+
+      const allInputs = getAllInputs();
+      const allAllowedValues = getAllAllowedValuesOfAllInputs(allInputs);
+
+      const remainingAllowedValues =
+        shared.getRemainingAllowedValuesFromComboNumber(
+          data.comboAt,
+          allAllowedValues
+        );
+      combos(remainingAllowedValues);
     }
   }
 
@@ -253,34 +269,45 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     log("Trying to PAUSE combos automation.", new Date());
   }
 
-  async function combos() {
+  async function combos(currentlyAllowedValues = null) {
     if (!data.continueAutomation) {
       stopAutomation();
       return;
     }
 
     log("STARTING combos automation.", new Date());
-    let allInputs = getAllInputs();
-    let currentlyAllowedValues = getAllCurrentlyAllowedValues(allInputs);
-    let timer = setInterval(() => {
-      shared.getData((updatedData) => {
-        data = updatedData;
-        if (!data.continueAutomation) {
-          clearInterval(timer);
-          stopAutomation();
-        }
-      });
-    }, 1000);
-    await recursivelyTryCombos(allInputs, currentlyAllowedValues);
-    log("COMBOS: list of allInputs", allInputs);
-    stopAutomation();
+
+    const allInputs = getAllInputs();
+    const allAllowedValues =
+      currentlyAllowedValues || getAllAllowedValuesOfAllInputs(allInputs);
+    data.submitRetriesLeft = 1; // re-init
+    data.comboCount = allAllowedValues
+      .map((x) => x.length) // otherwise .reduce returns NaN because initialValue=1 wouldn't have .length
+      .reduce((a, b) => a * b);
+    if (!currentlyAllowedValues) data.comboAt = 0;
+
+    shared.setData(data, async function () {
+      let timer = setInterval(() => {
+        shared.getData((updatedData) => {
+          data = updatedData;
+          if (!data.continueAutomation) {
+            clearInterval(timer);
+            stopAutomation();
+          }
+        });
+      }, 1000);
+      log("COMBOS: list of allInputs", allInputs);
+      await recursivelyTryCombos(allInputs, allAllowedValues);
+      log("COMBOS: list of allInputs", allInputs);
+      stopAutomation();
+    });
   }
 
-  async function recursivelyTryCombos(inputs, values, index = 0) {
+  async function recursivelyTryCombos(allInputs, allAllowedValues, index = 0) {
     await sleep();
     if (data.continueAutomation) {
-      const input = inputs[index];
-      let allowedVals = values[index];
+      const input = allInputs[index];
+      let allowedVals = allAllowedValues[index];
       allowedVals = getUniqueValuesForRepeatSubmit(input, allowedVals, index);
 
       const isInputCurrentlyVisible = isVisible(input);
@@ -296,30 +323,34 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
           const isInputCurrentlyVisible = isVisible(input);
           if (isInputCurrentlyVisible) {
             input[dotValueForType(input.type)] = value;
+            data.comboAt = getComboNumber(allInputs, allAllowedValues, index);
+            shared.setData(data); // putting recurse() in the callback seems to break the sequence
+            await sleep();
             await recurse();
           }
         }
       }
 
       async function recurse() {
-        const canRecurse = index + 1 < inputs.length && data.continueAutomation;
+        const canRecurse =
+          index + 1 < allInputs.length && data.continueAutomation;
         if (canRecurse) {
-          await recursivelyTryCombos(inputs, values, index + 1);
+          await recursivelyTryCombos(allInputs, allAllowedValues, index + 1);
         } else if (/* ready for submit input && */ data.continueAutomation) {
           if (!isVisible($(data.submit_selector))) {
             log(
               `COMBOS: ❌ Submit input isn't visible: ${data.submit_selector}`,
-              inputs.map((element) => element[dotValueForType(element.type)])
+              allInputs.map((element) => element[dotValueForType(element.type)])
             );
           } else if ($(data.submit_selector).disabled) {
             log(
               `COMBOS: ❌ Submit input is disabled: ${data.submit_selector}`,
-              inputs.map((element) => element[dotValueForType(element.type)])
+              allInputs.map((element) => element[dotValueForType(element.type)])
             );
           } else {
             log(
               `COMBOS: ✅ Can hit submit: ${data.submit_selector}`,
-              inputs.map((element) => element[dotValueForType(element.type)])
+              allInputs.map((element) => element[dotValueForType(element.type)])
             );
             if (data.submit_combos) {
               $(data.submit_selector).click();
@@ -352,26 +383,30 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     );
   }
 
-  function getAllCurrentlyAllowedValues(allInputs) {
-    const currentlyAllowedValues = [];
+  /** param allInputs must be an array of HTML elements */
+  function getAllAllowedValuesOfAllInputs(allInputs) {
+    const allAllowedValues = [];
     allInputs.forEach((element) => {
       const forSureAllowed = getAllAllowedValues(element);
       const fallbackValues =
         !forSureAllowed || !forSureAllowed.length
           ? getFallbackValues(element)
           : [];
-      currentlyAllowedValues.push([...forSureAllowed, ...fallbackValues]);
+      allAllowedValues.push([...forSureAllowed, ...fallbackValues]);
     });
-    return currentlyAllowedValues;
+    return allAllowedValues;
   }
 
   function getAllAllowedValues(formInputElement) {
     let allowedValues = [];
     // TODO: input could pull suggestions from a datalist
     if (formInputElement.tagName === "SELECT") {
+      // Note: you apparently can't use styles to hide options in Safari/iOS
       allowedValues = [...$("select").querySelectorAll("option")].map(
         (x) => x.value
       );
+      const uniqueValues = [...new Set(allowedValues)];
+      allowedValues = uniqueValues;
     }
     return allowedValues;
   }
@@ -452,9 +487,9 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       case "color":
       case "date":
       case "datetime-local":
-        return defaultValues;
+        return [...defaultValues];
       case "email":
-        return [`test${index}@test.com`];
+        return ["", `test${index}@test.com`];
       case "file":
       case "month":
       case "number":
@@ -464,15 +499,25 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       case "search":
       case "submit":
       case "tel":
-        return defaultValues;
+        return [...defaultValues];
       case "text":
-        return [`test${index}`];
+        return ["", `test${index}`];
       case "time":
       case "url":
       case "week":
-        return defaultValues;
+        return [...defaultValues];
       default:
-        return defaultValues;
+        return [...defaultValues];
     }
+  }
+
+  /** allInputs=[HTML elements] and allAllowedValues=[] */
+  function getComboNumber(allInputs, allAllowedValues, index = 0) {
+    const currentValues = allInputs.map((x) => x[dotValueForType(x.type)]);
+    let allowedVals = allInputs.map((input, i) =>
+      getUniqueValuesForRepeatSubmit(input, allAllowedValues[i], index)
+    );
+    // log("currentValues", currentValues, "allowedVals", allowedVals);
+    return shared.getComboNumberFromValues(currentValues, allowedVals);
   }
 })();
