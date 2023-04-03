@@ -211,18 +211,28 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
 
   async function continueAutomation() {
     if (!data.continueAutomation || !hasAllowedHostname()) return;
-    log("COMBOS: Continuing automation in 3 seconds.");
-    await sleep(3000);
+
     if (!$(data.submit_selector)) {
-      const message = `COMBOS: Could not find "${data.submit_selector}". Going back one page in 3 seconds.`;
-      log(message);
-      await sleep(3000);
       data.continueAutomation = data.submitRetriesLeft > 0;
-      shared.setData(data, () => {
-        window.history.back();
+      data.submitRetriesLeft = Math.max(0, data.submitRetriesLeft - 1);
+      shared.setData(data, async function () {
+        if (data.continueAutomation) {
+          const message = `COMBOS: Could not find "${data.submit_selector}". Going back one page in 3 seconds.`;
+          log(message);
+          await sleep(3000);
+          window.history.back();
+        } else {
+          stopAutomation();
+        }
       });
+    } else if (data.comboAt >= data.comboCount - 1) {
+      stopAutomation();
     } else {
+      log("COMBOS: Continuing automation in 3 seconds.");
+      await sleep(3000);
       // TODO: handle continuing combos() automation where left off before auto-refresh page after each submit
+      data.comboCount;
+      data.comboAt;
       // TODO: handle stopping combos() automation if the user doesn't want to continue on refresh
     }
   }
@@ -259,12 +269,17 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       return;
     }
 
+    log("STARTING combos automation.", new Date());
+
+    const allInputs = getAllInputs();
+    const currentlyAllowedValues = getAllAllowedValuesOfAllInputs(allInputs);
     data.submitRetriesLeft = 1; // re-init
+    data.comboCount = currentlyAllowedValues
+      .map((x) => x.length) // otherwise .reduce returns NaN because initialValue=1 wouldn't have .length
+      .reduce((a, b) => a * b);
+    data.comboAt = 0;
 
     shared.setData(data, async function () {
-      log("STARTING combos automation.", new Date());
-      let allInputs = getAllInputs();
-      let currentlyAllowedValues = getAllCurrentlyAllowedValues(allInputs);
       let timer = setInterval(() => {
         shared.getData((updatedData) => {
           data = updatedData;
@@ -274,6 +289,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
           }
         });
       }, 1000);
+      log("COMBOS: list of allInputs", allInputs);
       await recursivelyTryCombos(allInputs, currentlyAllowedValues);
       log("COMBOS: list of allInputs", allInputs);
       stopAutomation();
@@ -356,7 +372,8 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     );
   }
 
-  function getAllCurrentlyAllowedValues(allInputs) {
+  /** param allInputs must be an array of HTML elements */
+  function getAllAllowedValuesOfAllInputs(allInputs) {
     const currentlyAllowedValues = [];
     allInputs.forEach((element) => {
       const forSureAllowed = getAllAllowedValues(element);
@@ -373,6 +390,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     let allowedValues = [];
     // TODO: input could pull suggestions from a datalist
     if (formInputElement.tagName === "SELECT") {
+      // Note: you apparently can't use styles to hide options in Safari/iOS
       allowedValues = [...$("select").querySelectorAll("option")].map(
         (x) => x.value
       );

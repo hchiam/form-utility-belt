@@ -10,6 +10,8 @@ export const defaultData = {
   summary: "",
   continueAutomation: false,
   submitRetriesLeft: 1,
+  comboCount: 0,
+  comboAt: 0,
 };
 
 export function getData(callback) {
