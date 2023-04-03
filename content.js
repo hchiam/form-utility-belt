@@ -217,7 +217,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       const message = `COMBOS: Could not find "${data.submit_selector}". Going back one page in 3 seconds.`;
       log(message);
       await sleep(3000);
-      data.continueAutomation = false;
+      data.continueAutomation = data.submitRetriesLeft > 0;
       shared.setData(data, () => {
         window.history.back();
       });
@@ -259,21 +259,25 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       return;
     }
 
-    log("STARTING combos automation.", new Date());
-    let allInputs = getAllInputs();
-    let currentlyAllowedValues = getAllCurrentlyAllowedValues(allInputs);
-    let timer = setInterval(() => {
-      shared.getData((updatedData) => {
-        data = updatedData;
-        if (!data.continueAutomation) {
-          clearInterval(timer);
-          stopAutomation();
-        }
-      });
-    }, 1000);
-    await recursivelyTryCombos(allInputs, currentlyAllowedValues);
-    log("COMBOS: list of allInputs", allInputs);
-    stopAutomation();
+    data.submitRetriesLeft = 1; // re-init
+
+    shared.setData(data, async function () {
+      log("STARTING combos automation.", new Date());
+      let allInputs = getAllInputs();
+      let currentlyAllowedValues = getAllCurrentlyAllowedValues(allInputs);
+      let timer = setInterval(() => {
+        shared.getData((updatedData) => {
+          data = updatedData;
+          if (!data.continueAutomation) {
+            clearInterval(timer);
+            stopAutomation();
+          }
+        });
+      }, 1000);
+      await recursivelyTryCombos(allInputs, currentlyAllowedValues);
+      log("COMBOS: list of allInputs", allInputs);
+      stopAutomation();
+    });
   }
 
   async function recursivelyTryCombos(inputs, values, index = 0) {

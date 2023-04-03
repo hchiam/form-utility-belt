@@ -9,6 +9,7 @@ export const defaultData = {
   recordIndex: 0,
   summary: "",
   continueAutomation: false,
+  submitRetriesLeft: 1,
 };
 
 export function getData(callback) {
