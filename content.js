@@ -325,11 +325,8 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
             input[dotValueForType(input.type)] = value;
             data.comboAt = getComboNumber(allInputs, allAllowedValues, index);
             shared.setData(data); // putting recurse() in the callback seems to break the sequence
-            // shared.setData(data, async function () {
-            // putting recurse() in the callback seems to break the sequence
-            await sleep(); // TODO: remove this
+            await sleep();
             await recurse();
-            // });
           }
         }
       }
