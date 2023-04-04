@@ -133,3 +133,14 @@ button:disabled,
 .d-none {
   display: none !important;
 }
+
+.experimental:after {
+  --color: rgb(27, 100, 145);
+  background: white;
+  border-radius: 1rem;
+  color: var(--color);
+  content: "EXPERIMENTAL";
+  margin: 0.5rem;
+  outline: 3px solid var(--color);
+  padding: 0.25rem;
+}
