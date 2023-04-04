@@ -60,9 +60,13 @@ Do you still want to continue?`
       }
       if (yes) {
         data.continueAutomation = !data.continueAutomation;
-        combosElement.innerText = data.continueAutomation
-          ? "PAUSE trying all combinations"
-          : "Try all combinations";
+        if (data.continueAutomation) {
+          combosElement.innerText = "PAUSE trying all combinations";
+          combosElement.classList.add("on");
+        } else {
+          combosElement.innerText = "Try all combinations";
+          combosElement.classList.remove("on");
+        }
         if (!data.continueAutomation) window.close();
         shared.setData(data);
         combos();
@@ -129,9 +133,13 @@ Do you still want to continue?`);
       data = updatedData;
       hostnamesElement.value = data.hostnames.join(",") || defaultHostnames;
       submitSelectorElement.value = data.submit_selector;
-      combosElement.innerText = data.continueAutomation
-        ? "PAUSE trying all combinations"
-        : "Try all combinations";
+      if (data.continueAutomation) {
+        combosElement.innerText = "PAUSE trying all combinations";
+        combosElement.classList.add("on");
+      } else {
+        combosElement.innerText = "Try all combinations";
+        combosElement.classList.remove("on");
+      }
       submitCombosElement.checked = data.submit_combos;
       recordElement.innerText = data.record;
       summaryElement.innerText = data.summary;

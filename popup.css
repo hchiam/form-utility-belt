@@ -144,3 +144,8 @@ button:disabled,
   outline: 3px solid var(--color);
   padding: 0.25rem;
 }
+
+.on {
+  color: red;
+  font-weight: bold;
+}
