@@ -63,13 +63,15 @@ Do you still want to continue?`
         if (data.continueAutomation) {
           combosElement.innerText = "PAUSE trying all combinations";
           combosElement.classList.add("on");
+          shared.setData(data);
+          combos();
         } else {
           combosElement.innerText = "Try all combinations";
           combosElement.classList.remove("on");
+          shared.setData(data);
+          stopCombos();
+          window.close();
         }
-        if (!data.continueAutomation) window.close();
-        shared.setData(data);
-        combos();
       }
     });
     submitCombosElement.addEventListener("change", () => {
@@ -167,6 +169,15 @@ Do you still want to continue?`);
       const activeTab = tabData[0];
       chrome.tabs.sendMessage(activeTab.id, {
         message: "combos",
+      });
+    });
+  }
+
+  function stopCombos() {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
+      const activeTab = tabData[0];
+      chrome.tabs.sendMessage(activeTab.id, {
+        message: "stop-combos",
       });
     });
   }

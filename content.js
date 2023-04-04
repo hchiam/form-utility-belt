@@ -248,6 +248,11 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     sender,
     sendResponse
   ) {
+    if (request.message === "stop-combos") {
+      stopAutomation();
+      return;
+    }
+
     shared.getData((updatedData) => {
       data = updatedData;
       try {
