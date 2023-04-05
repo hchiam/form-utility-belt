@@ -225,7 +225,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
           stopAutomation();
         }
       });
-    } else if (data.comboAt >= data.comboCount) {
+    } else if (data.comboAt < 0 || data.comboAt >= data.comboCount) {
       stopAutomation();
     } else {
       log("COMBOS: Continuing automation in 3 seconds.");

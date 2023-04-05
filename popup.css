@@ -97,7 +97,8 @@ button:disabled,
 
 #record:empty:after,
 #summary:empty:after {
-  content: "<Nothing recorded so far.>";
+  content: "< Nothing recorded so far. >";
+  font-style: italic;
 }
 
 #hostnames {
@@ -134,12 +135,12 @@ button:disabled,
   display: none !important;
 }
 
-.experimental:after {
+.experimental:before {
   --color: rgb(27, 100, 145);
   background: white;
   border-radius: 1rem;
   color: var(--color);
-  content: "EXPERIMENTAL";
+  content: "EXPERIMENTAL: ";
   margin: 0.5rem;
   outline: 3px solid var(--color);
   padding: 0.25rem;

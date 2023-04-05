@@ -1,6 +1,10 @@
 {
   "scripts": {
-    "test": "node shared.test.js"
+    "test": "node shared.test.js",
+    "prepare": "husky install"
   },
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "husky": "8.0.3"
+  }
 }

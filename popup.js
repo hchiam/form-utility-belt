@@ -39,11 +39,21 @@
         enableBasedOnHostnames(tabHostnames);
       });
     });
+    hostnamesElement.addEventListener("change", () => {
+      alert(
+        "Manually refresh the page to let the Form Utility Belt start recording steps."
+      );
+    });
     submitSelectorElement.addEventListener("keyup", () => {
       const defaultSubmitSelector = "[type='submit']";
       data.submit_selector =
         submitSelectorElement.value || defaultSubmitSelector;
       shared.setData(data);
+    });
+    submitSelectorElement.addEventListener("change", () => {
+      alert(
+        "Manually refresh the page to let the Form Utility Belt start recording steps."
+      );
     });
     combosElement.addEventListener("click", () => {
       let yes = true;
