@@ -371,12 +371,14 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     const submitInputElements = $$(
       data.submit_selector || defaultSubmitSelector
     );
-    return [...$$(possibleFormInputs)].filter((element) => {
-      const isNotSubmitInput = [...submitInputElements].every(
-        (submitElement) => submitElement !== element
-      );
-      return /*isVisible(element) &&*/ isNotSubmitInput;
-    });
+    return [...$$(possibleFormInputs)]
+      .filter((element) => {
+        const isNotSubmitInput = [...submitInputElements].every(
+          (submitElement) => submitElement !== element
+        );
+        return /*isVisible(element) &&*/ isNotSubmitInput;
+      })
+      .reverse(); // so first input changes most, for visual reassurance;
   }
 
   function isVisible(element) {
