@@ -137,6 +137,7 @@ button:disabled,
 
 #combos {
   --progress: 0%;
+  background: lightgrey;
   background: linear-gradient(
     to right,
     yellow var(--progress),

@@ -226,8 +226,9 @@ Do you still want to continue?`);
   function updateProgressBar() {
     shared.getData((updatedData) => {
       data = updatedData;
-      const max = Number(data.comboCount);
-      const value = data.comboAt < 0 ? max + data.comboAt : data.comboAt;
+      const max = Number(data.comboCount || 0);
+      let value = Number(data.comboAt || 0);
+      value = value < 0 ? max + data.comboAt : data.comboAt;
       const percent = Math.round((100 * value) / max);
       setCSSVariable("--progress", `${percent}%`, combosElement);
     });
