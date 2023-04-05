@@ -85,6 +85,7 @@ Do you still want to continue?`
             stopCombos();
           });
         }
+        shared.beep();
       }
     });
     submitCombosElement.addEventListener("change", () => {
@@ -101,6 +102,7 @@ Do you still want to continue?`);
       if (yes) {
         data.submit_combos = submitCombosElement.checked;
         shared.setData(data);
+        shared.beep();
       } else {
         submitCombosElement.checked = false;
       }
@@ -112,11 +114,13 @@ Do you still want to continue?`);
         copyToClipboard(data.record, () => {
           alert(`Copied JS recording to clipboard.`);
           window.close();
+          shared.beep();
         });
       }
     });
     recordElement.addEventListener("click", () => {
       if (data.record) {
+        shared.beep();
         copyToClipboard(data.record, () => {
           alert(`Copied JS recording to clipboard.`);
           window.close();
@@ -127,6 +131,7 @@ Do you still want to continue?`);
       data.summary = summaryElement.innerText;
       shared.setData(data);
       if (event.key === "Enter" && data.summary) {
+        shared.beep();
         copyToClipboard(data.summary, () => {
           alert(`Copied summary to clipboard.`);
           window.close();
@@ -135,6 +140,7 @@ Do you still want to continue?`);
     });
     summaryElement.addEventListener("click", () => {
       if (data.summary) {
+        shared.beep();
         copyToClipboard(data.summary, () => {
           alert(`Copied summary to clipboard.`);
           window.close();
@@ -277,6 +283,7 @@ Do you still want to continue?`);
       //   path: request.value,
       // });
     } else if (request.action === "stop-combos_content") {
+      shared.beep();
       combosElement.innerText = "Try all combinations";
       combosElement.classList.remove("on");
       stopProgressBar();

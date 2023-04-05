@@ -273,6 +273,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     shared.setData(data);
     log("Trying to PAUSE combos automation.", new Date());
     resetTabIcon();
+    shared.beep();
     chrome.runtime
       .sendMessage({
         action: "stop-combos_content",
