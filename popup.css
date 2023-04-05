@@ -60,15 +60,25 @@ button {
   cursor: grab;
 }
 
+#record:not(:disabled):not(:empty):focus,
 #record:not(:disabled):not(:empty):hover,
 #submit_combos_label:not([disabled="true"]):hover,
 #submit_combos_label:not([disabled="true"]):focus-within,
+#summary:not(:disabled):not(:empty):focus,
 #summary:not(:disabled):not(:empty):hover,
 input:not(:disabled):hover,
 button:not(:disabled):hover {
   background: lightyellow;
   box-shadow: 0 0 10px yellow;
   color: black;
+  outline: 3px solid yellow;
+  outline-offset: 3px;
+}
+
+#combos:not(:disabled):not(:empty):focus,
+#combos:not(:disabled):not(:empty):hover {
+  outline: 3px solid yellow;
+  outline-offset: 3px;
 }
 
 input:focus,
@@ -97,7 +107,8 @@ button:disabled,
 
 #record:empty:after,
 #summary:empty:after {
-  content: "<Nothing recorded so far.>";
+  content: "< Nothing recorded so far. >";
+  font-style: italic;
 }
 
 #hostnames {
@@ -130,19 +141,36 @@ button:disabled,
   vertical-align: middle;
 }
 
+#combos {
+  --progress: 0%;
+  background: linear-gradient(
+    to right,
+    yellow var(--progress),
+    #333 var(--progress)
+  );
+  font-weight: bolder;
+
+  /* text outline: */
+  --c: white;
+  text-shadow: -1px -1px 0 var(--c), -1px 0px 0 var(--c), -1px +1px 0 var(--c),
+    0px -1px 0 var(--c), 0px +1px 0 var(--c), +1px -1px 0 var(--c),
+    +1px 0px 0 var(--c), +1px +1px 0 var(--c);
+}
+
 .d-none {
   display: none !important;
 }
 
-.experimental:after {
+.experimental:before {
   --color: rgb(27, 100, 145);
   background: white;
   border-radius: 1rem;
   color: var(--color);
-  content: "EXPERIMENTAL";
+  content: "EXPERIMENTAL: ";
   margin: 0.5rem;
   outline: 3px solid var(--color);
   padding: 0.25rem;
+  text-shadow: none;
 }
 
 .on {

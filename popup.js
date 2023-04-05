@@ -6,6 +6,7 @@
 
   const defaultHostnames = shared.defaultHostnames;
   const defaultSubmitSelector = shared.defaultSubmitSelector;
+  let progressBarTimer = null;
 
   let data = { ...shared.defaultData };
 
@@ -39,11 +40,21 @@
         enableBasedOnHostnames(tabHostnames);
       });
     });
+    hostnamesElement.addEventListener("change", () => {
+      alert(
+        "Manually refresh the page to let the Form Utility Belt start recording steps."
+      );
+    });
     submitSelectorElement.addEventListener("keyup", () => {
       const defaultSubmitSelector = "[type='submit']";
       data.submit_selector =
         submitSelectorElement.value || defaultSubmitSelector;
       shared.setData(data);
+    });
+    submitSelectorElement.addEventListener("change", () => {
+      alert(
+        "Manually refresh the page to let the Form Utility Belt start recording steps."
+      );
     });
     combosElement.addEventListener("click", () => {
       let yes = true;
@@ -63,14 +74,16 @@ Do you still want to continue?`
         if (data.continueAutomation) {
           combosElement.innerText = "PAUSE trying all combinations";
           combosElement.classList.add("on");
-          shared.setData(data);
-          combos();
+          data.showProgressBar = true;
+          shared.setData(data, () => {
+            combos();
+          });
         } else {
           combosElement.innerText = "Try all combinations";
           combosElement.classList.remove("on");
-          shared.setData(data);
-          stopCombos();
-          window.close();
+          shared.setData(data, () => {
+            stopCombos();
+          });
         }
       }
     });
@@ -143,6 +156,11 @@ Do you still want to continue?`);
         combosElement.classList.remove("on");
       }
       submitCombosElement.checked = data.submit_combos;
+      stopProgressBar();
+      if (data.showProgressBar) {
+        updateProgressBar();
+        startProgressBar();
+      }
       recordElement.innerText = data.record;
       summaryElement.innerText = data.summary;
       if (callback) callback();
@@ -167,18 +185,45 @@ Do you still want to continue?`);
   function combos() {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
       const activeTab = tabData[0];
-      chrome.tabs.sendMessage(activeTab.id, {
-        message: "combos",
-      });
+      chrome.tabs
+        .sendMessage(activeTab.id, {
+          message: "combos",
+        })
+        .then(() => {
+          startProgressBar();
+        });
     });
   }
 
   function stopCombos() {
+    stopProgressBar();
     chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
       const activeTab = tabData[0];
-      chrome.tabs.sendMessage(activeTab.id, {
-        message: "stop-combos",
-      });
+      chrome.tabs
+        .sendMessage(activeTab.id, {
+          message: "stop-combos",
+        })
+        .then(() => {
+          window.close();
+        });
+    });
+  }
+
+  function stopProgressBar() {
+    clearInterval(progressBarTimer);
+  }
+
+  function startProgressBar() {
+    progressBarTimer = setInterval(updateProgressBar, 1000);
+  }
+
+  function updateProgressBar() {
+    shared.getData((updatedData) => {
+      data = updatedData;
+      const value = Math.abs(data.comboAt);
+      const max = data.comboCount;
+      const percent = Math.round((100 * value) / max);
+      setCSSVariable("--progress", `${percent}%`, combosElement);
     });
   }
 
@@ -217,4 +262,24 @@ Do you still want to continue?`);
       }
     }
   }
+
+  function setCSSVariable(name, value, element) {
+    (element || document.querySelector(":root")).style.setProperty(name, value);
+  }
+
+  chrome.runtime.onMessage.addListener(function (
+    request,
+    sender,
+    sendResponse
+  ) {
+    if (request.action === "change-icon") {
+      // chrome.action.setIcon({
+      //   path: request.value,
+      // });
+    } else if (request.action === "stop-combos_content") {
+      combosElement.innerText = "Try all combinations";
+      combosElement.classList.remove("on");
+      stopProgressBar();
+    }
+  });
 })();

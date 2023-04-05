@@ -12,6 +12,7 @@ export const defaultData = {
   submitRetriesLeft: 1,
   comboCount: 0,
   comboAt: 0,
+  showProgressBar: false,
 };
 
 export function getData(callback) {

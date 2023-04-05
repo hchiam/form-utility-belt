@@ -225,7 +225,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
           stopAutomation();
         }
       });
-    } else if (data.comboAt >= data.comboCount) {
+    } else if (data.comboAt < 0 || data.comboAt >= data.comboCount) {
       stopAutomation();
     } else {
       log("COMBOS: Continuing automation in 3 seconds.");
@@ -272,13 +272,24 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     data.continueAutomation = false;
     shared.setData(data);
     log("Trying to PAUSE combos automation.", new Date());
+    resetTabIcon();
+    chrome.runtime
+      .sendMessage({
+        action: "stop-combos_content",
+      })
+      .catch((e) => {
+        log(e);
+      });
   }
 
   async function combos(currentlyAllowedValues = null) {
     if (!data.continueAutomation) {
+      resetTabIcon();
       stopAutomation();
       return;
     }
+
+    changeTabIcon();
 
     log("STARTING combos automation.", new Date());
 
@@ -367,16 +378,18 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   }
 
   function getAllInputs() {
-    const possibleFormInputs = `input:not([type="submit"]), select, textarea, button`;
+    const possibleFormInputs = `input:not([type="submit"]):not([type="hidden"]), select, textarea`; // not button?
     const submitInputElements = $$(
       data.submit_selector || defaultSubmitSelector
     );
-    return [...$$(possibleFormInputs)].filter((element) => {
-      const isNotSubmitInput = [...submitInputElements].every(
-        (submitElement) => submitElement !== element
-      );
-      return /*isVisible(element) &&*/ isNotSubmitInput;
-    });
+    return [...$$(possibleFormInputs)]
+      .filter((element) => {
+        const isNotSubmitInput = [...submitInputElements].every(
+          (submitElement) => submitElement !== element
+        );
+        return /*isVisible(element) &&*/ isNotSubmitInput;
+      })
+      .reverse(); // so first input changes most, for visual reassurance;
   }
 
   function isVisible(element) {
@@ -407,7 +420,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     // TODO: input could pull suggestions from a datalist
     if (formInputElement.tagName === "SELECT") {
       // Note: you apparently can't use styles to hide options in Safari/iOS
-      allowedValues = [...$("select").querySelectorAll("option")].map(
+      allowedValues = [...formInputElement.querySelectorAll("option")].map(
         (x) => x.value
       );
       const uniqueValues = [...new Set(allowedValues)];
@@ -524,5 +537,28 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     );
     // log("currentValues", currentValues, "allowedVals", allowedVals);
     return shared.getComboNumberFromValues(currentValues, allowedVals);
+  }
+
+  const tabIcon = $('[rel="icon"]')?.href;
+  const customIcon =
+    "https://github.com/hchiam/form-utility-belt/blob/main/icon_128.png?raw=true";
+  function changeTabIcon() {
+    if ($('[rel="icon"]')?.href) {
+      $('[rel="icon"]').href = customIcon;
+      // chrome.runtime.sendMessage({
+      //   action: "change-icon",
+      //   value: tabIcon,
+      // });
+    }
+  }
+
+  function resetTabIcon() {
+    if ($('[rel="icon"]')?.href) {
+      $('[rel="icon"]').href = tabIcon;
+      // chrome.runtime.sendMessage({
+      //   action: "change-icon",
+      //   value: customIcon, // TODO: this doesn't work for some reason
+      // });
+    }
   }
 })();
