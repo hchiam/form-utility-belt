@@ -80,7 +80,6 @@ Do you still want to continue?`
           combosElement.classList.remove("on");
           shared.setData(data);
           stopCombos();
-          window.close();
         }
       }
     });
@@ -186,9 +185,13 @@ Do you still want to continue?`);
   function stopCombos() {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
       const activeTab = tabData[0];
-      chrome.tabs.sendMessage(activeTab.id, {
-        message: "stop-combos",
-      });
+      chrome.tabs
+        .sendMessage(activeTab.id, {
+          message: "stop-combos",
+        })
+        .then(() => {
+          window.close();
+        });
     });
   }
 
