@@ -418,7 +418,6 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
 
   function getAllAllowedValues(formInputElement) {
     let allowedValues = [];
-    // TODO: input could pull suggestions from a datalist
     if (formInputElement.tagName === "SELECT") {
       // Note: you apparently can't use styles to hide options in Safari/iOS
       allowedValues = [...formInputElement.querySelectorAll("option")].map(
