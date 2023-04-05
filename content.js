@@ -367,7 +367,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   }
 
   function getAllInputs() {
-    const possibleFormInputs = `input:not([type="submit"]), select, textarea, button`;
+    const possibleFormInputs = `input:not([type="submit"]):not([type="hidden"]), select, textarea`; // not button?
     const submitInputElements = $$(
       data.submit_selector || defaultSubmitSelector
     );
@@ -409,7 +409,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     // TODO: input could pull suggestions from a datalist
     if (formInputElement.tagName === "SELECT") {
       // Note: you apparently can't use styles to hide options in Safari/iOS
-      allowedValues = [...$("select").querySelectorAll("option")].map(
+      allowedValues = [...formInputElement.querySelectorAll("option")].map(
         (x) => x.value
       );
       const uniqueValues = [...new Set(allowedValues)];
