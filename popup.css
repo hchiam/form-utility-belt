@@ -75,12 +75,6 @@ button:not(:disabled):hover {
   outline-offset: 3px;
 }
 
-#combos:not(:disabled):not(:empty):focus,
-#combos:not(:disabled):not(:empty):hover {
-  outline: 3px solid yellow;
-  outline-offset: 3px;
-}
-
 input:focus,
 input:active,
 button:focus {
@@ -146,7 +140,7 @@ button:disabled,
   background: linear-gradient(
     to right,
     yellow var(--progress),
-    #333 var(--progress)
+    lightgrey var(--progress)
   );
   font-weight: bolder;
 
@@ -155,6 +149,17 @@ button:disabled,
   text-shadow: -1px -1px 0 var(--c), -1px 0px 0 var(--c), -1px +1px 0 var(--c),
     0px -1px 0 var(--c), 0px +1px 0 var(--c), +1px -1px 0 var(--c),
     +1px 0px 0 var(--c), +1px +1px 0 var(--c);
+}
+
+#combos:not(:disabled):not(:empty):focus,
+#combos:not(:disabled):not(:empty):hover {
+  outline: 3px solid yellow;
+  outline-offset: 3px;
+  background: linear-gradient(
+    to right,
+    yellow var(--progress),
+    lightyellow var(--progress)
+  );
 }
 
 .d-none {
@@ -171,6 +176,11 @@ button:disabled,
   outline: 3px solid var(--color);
   padding: 0.25rem;
   text-shadow: none;
+}
+
+.experimental:focus:before,
+.experimental:hover:before {
+  background: lightyellow;
 }
 
 .on {
