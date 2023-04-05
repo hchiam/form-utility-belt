@@ -6,6 +6,7 @@
 
   const defaultHostnames = shared.defaultHostnames;
   const defaultSubmitSelector = shared.defaultSubmitSelector;
+  let progressBarTimer = null;
 
   let data = { ...shared.defaultData };
 
@@ -16,6 +17,7 @@
   const submitCombosLabelElement = document.querySelector(
     "#submit_combos_label"
   );
+  const progressElement = document.querySelector("#progress");
   const recordElement = document.querySelector("#record");
   const summaryElement = document.querySelector("#summary");
 
@@ -73,13 +75,16 @@ Do you still want to continue?`
         if (data.continueAutomation) {
           combosElement.innerText = "PAUSE trying all combinations";
           combosElement.classList.add("on");
-          shared.setData(data);
-          combos();
+          data.showProgressBar = true;
+          shared.setData(data, () => {
+            combos();
+          });
         } else {
           combosElement.innerText = "Try all combinations";
           combosElement.classList.remove("on");
-          shared.setData(data);
-          stopCombos();
+          shared.setData(data, () => {
+            stopCombos();
+          });
         }
       }
     });
@@ -152,6 +157,12 @@ Do you still want to continue?`);
         combosElement.classList.remove("on");
       }
       submitCombosElement.checked = data.submit_combos;
+      stopProgressBar();
+      if (data.showProgressBar) {
+        progressElement.classList.remove("d-none");
+        updateProgressBar();
+        startProgressBar();
+      }
       recordElement.innerText = data.record;
       summaryElement.innerText = data.summary;
       if (callback) callback();
@@ -174,15 +185,21 @@ Do you still want to continue?`);
   }
 
   function combos() {
+    progressElement.classList.remove("d-none");
     chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
       const activeTab = tabData[0];
-      chrome.tabs.sendMessage(activeTab.id, {
-        message: "combos",
-      });
+      chrome.tabs
+        .sendMessage(activeTab.id, {
+          message: "combos",
+        })
+        .then(() => {
+          startProgressBar();
+        });
     });
   }
 
   function stopCombos() {
+    stopProgressBar();
     chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
       const activeTab = tabData[0];
       chrome.tabs
@@ -192,6 +209,22 @@ Do you still want to continue?`);
         .then(() => {
           window.close();
         });
+    });
+  }
+
+  function stopProgressBar() {
+    clearInterval(progressBarTimer);
+  }
+
+  function startProgressBar() {
+    progressBarTimer = setInterval(updateProgressBar, 1000);
+  }
+
+  function updateProgressBar() {
+    shared.getData((updatedData) => {
+      data = updatedData;
+      progressElement.setAttribute("value", data.comboAt);
+      progressElement.setAttribute("max", data.comboCount);
     });
   }
 
