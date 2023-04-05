@@ -418,7 +418,6 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
 
   function getAllAllowedValues(formInputElement) {
     let allowedValues = [];
-    // TODO: input could pull suggestions from a datalist
     if (formInputElement.tagName === "SELECT") {
       // Note: you apparently can't use styles to hide options in Safari/iOS
       allowedValues = [...formInputElement.querySelectorAll("option")].map(
@@ -426,8 +425,26 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       );
       const uniqueValues = [...new Set(allowedValues)];
       allowedValues = uniqueValues;
+    } else if (formInputElement.tagName === "INPUT") {
+      const datalistValues = getDatalist(formInputElement);
+      allowedValues.push(...datalistValues);
     }
     return allowedValues;
+  }
+
+  function getDatalist(formInputElement) {
+    if (formInputElement.tagName !== "INPUT") return [];
+
+    const datalistId = formInputElement.getAttribute("list");
+    const datalistElement = $(`#${datalistId}`);
+
+    if (!datalistElement) return [];
+
+    return [""].concat(
+      [...datalistElement.querySelectorAll("option")].map((o) =>
+        o.getAttribute("value")
+      )
+    );
   }
 
   function dotValueForType(type) {
@@ -500,15 +517,16 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   }
 
   /** must return an array */
-  function getUniqueValuesForRepeatSubmit(InputElement, defaultValues, index) {
-    switch (InputElement.type) {
+  function getUniqueValuesForRepeatSubmit(inputElement, defaultValues, index) {
+    const values = [...defaultValues, ...getDatalist(inputElement)];
+    switch (inputElement.type) {
       case "checkbox":
       case "color":
       case "date":
       case "datetime-local":
-        return [...defaultValues];
+        return [...values];
       case "email":
-        return ["", `test${index}@test.com`];
+        return ["", `test${index}@test.com`, ...values];
       case "file":
       case "month":
       case "number":
@@ -518,15 +536,15 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       case "search":
       case "submit":
       case "tel":
-        return [...defaultValues];
+        return [...values];
       case "text":
-        return ["", `test${index}`];
+        return ["", `test${index}`, ...values];
       case "time":
       case "url":
       case "week":
-        return [...defaultValues];
+        return [...values];
       default:
-        return [...defaultValues];
+        return [...values];
     }
   }
 
