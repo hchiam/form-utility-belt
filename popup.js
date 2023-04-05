@@ -17,7 +17,6 @@
   const submitCombosLabelElement = document.querySelector(
     "#submit_combos_label"
   );
-  const progressElement = document.querySelector("#progress");
   const recordElement = document.querySelector("#record");
   const summaryElement = document.querySelector("#summary");
 
@@ -159,7 +158,6 @@ Do you still want to continue?`);
       submitCombosElement.checked = data.submit_combos;
       stopProgressBar();
       if (data.showProgressBar) {
-        progressElement.classList.remove("d-none");
         updateProgressBar();
         startProgressBar();
       }
@@ -185,7 +183,6 @@ Do you still want to continue?`);
   }
 
   function combos() {
-    progressElement.classList.remove("d-none");
     chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
       const activeTab = tabData[0];
       chrome.tabs
@@ -223,8 +220,10 @@ Do you still want to continue?`);
   function updateProgressBar() {
     shared.getData((updatedData) => {
       data = updatedData;
-      progressElement.setAttribute("value", data.comboAt);
-      progressElement.setAttribute("max", data.comboCount);
+      const value = Math.abs(data.comboAt);
+      const max = data.comboCount;
+      const percent = Math.round((100 * value) / max);
+      setCSSVariable("--progress", `${percent}%`, combosElement);
     });
   }
 
@@ -262,5 +261,9 @@ Do you still want to continue?`);
         console.log(err);
       }
     }
+  }
+
+  function setCSSVariable(name, value, element) {
+    (element || document.querySelector(":root")).style.setProperty(name, value);
   }
 })();
