@@ -272,13 +272,24 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     data.continueAutomation = false;
     shared.setData(data);
     log("Trying to PAUSE combos automation.", new Date());
+    resetTabIcon();
+    chrome.runtime
+      .sendMessage({
+        action: "stop-combos_content",
+      })
+      .catch((e) => {
+        log(e);
+      });
   }
 
   async function combos(currentlyAllowedValues = null) {
     if (!data.continueAutomation) {
+      resetTabIcon();
       stopAutomation();
       return;
     }
+
+    changeTabIcon();
 
     log("STARTING combos automation.", new Date());
 
@@ -526,5 +537,28 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     );
     // log("currentValues", currentValues, "allowedVals", allowedVals);
     return shared.getComboNumberFromValues(currentValues, allowedVals);
+  }
+
+  const tabIcon = $('[rel="icon"]')?.href;
+  const customIcon =
+    "https://github.com/hchiam/form-utility-belt/blob/main/icon_128.png?raw=true";
+  function changeTabIcon() {
+    if ($('[rel="icon"]')?.href) {
+      $('[rel="icon"]').href = customIcon;
+      // chrome.runtime.sendMessage({
+      //   action: "change-icon",
+      //   value: tabIcon,
+      // });
+    }
+  }
+
+  function resetTabIcon() {
+    if ($('[rel="icon"]')?.href) {
+      $('[rel="icon"]').href = tabIcon;
+      // chrome.runtime.sendMessage({
+      //   action: "change-icon",
+      //   value: customIcon, // TODO: this doesn't work for some reason
+      // });
+    }
   }
 })();

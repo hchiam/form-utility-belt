@@ -266,4 +266,20 @@ Do you still want to continue?`);
   function setCSSVariable(name, value, element) {
     (element || document.querySelector(":root")).style.setProperty(name, value);
   }
+
+  chrome.runtime.onMessage.addListener(function (
+    request,
+    sender,
+    sendResponse
+  ) {
+    if (request.action === "change-icon") {
+      // chrome.action.setIcon({
+      //   path: request.value,
+      // });
+    } else if (request.action === "stop-combos_content") {
+      combosElement.innerText = "Try all combinations";
+      combosElement.classList.remove("on");
+      stopProgressBar();
+    }
+  });
 })();
