@@ -474,16 +474,16 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       case "checkbox":
         return [false, true];
       case "color":
-        return ["", "#ff0000"];
+        return ["#ff0000"];
       case "date":
-        return ["", now];
+        return [now];
       case "datetime-local":
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         return ["", now.toISOString().slice(0, 16)];
       case "email":
         return ["", "test@test.com"];
       case "file":
-        return ["", "C:\\fakepath\\test.txt"];
+        return ["" /*, "C:\\fakepath\\test.txt"*/]; // not allowed to programmatically set non-empty file path
       case "month":
         const month = String(now.getMonth()).padStart(2, "0");
         return ["", `${year}-${month}`];
@@ -508,8 +508,9 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       case "url":
         return ["", "https://example.com"];
       case "week":
-        const days = Math.floor((now - year) / (24 * 60 * 60 * 1000));
-        const week = Math.ceil((now.getDay() + 1 + days) / 7);
+        const yearStartDate = new Date(year, 0, 1);
+        const days = Math.floor((now - yearStartDate) / (24 * 60 * 60 * 1000));
+        const week = Math.ceil(days / 7);
         return ["", `${year}-W${week}`];
       default:
         return ["", "test"];
