@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="intentionally-invalid-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demo</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main>
+      <div>
+        <select>
+          <option value="">- Please select -</option>
+          <option value="option 1">option 1</option>
+          <option value="show hidden">show hidden</option>
+        </select>
+      </div>
+      <div style="visibility: hidden">
+        <input id="parent_visibility_hidden" type="text" />
+      </div>
+      <div style="display: none">
+        <input id="parent_display_none" type="text" />
+      </div>
+      <div>
+        <textarea placeholder="textarea"></textarea>
+      </div>
+      <div><input type="checkbox" name="checkbox" />checkbox 1</div>
+      <div><input type="color" name="color" /></div>
+      <div><input type="date" name="date" /></div>
+      <div><input type="datetime-local" name="datetime-local" /></div>
+      <div><input type="email" name="email" placeholder="email" /></div>
+      <div><input type="file" name="file" /></div>
+      <div><input type="month" name="month" /></div>
+      <div><input type="number" name="number" placeholder="number" /></div>
+      <div>
+        <input type="password" name="password" placeholder="password" />
+      </div>
+      <div><input type="radio" name="radio" />radio 1</div>
+      <div><input type="radio" name="radio" />radio 2</div>
+      <div><input type="range" name="range" /></div>
+      <div><input type="search" name="search" placeholder="search" /></div>
+      <div><input type="submit" name="submit" /></div>
+      <div><input type="tel" name="tel" placeholder="tel" /></div>
+      <div><input type="text" name="text" placeholder="text" /></div>
+      <div><input type="time" name="time" /></div>
+      <div><input type="url" name="url" placeholder="url" /></div>
+      <div><input type="week" name="week" /></div>
+    </main>
+
+    <script src="index.js"></script>
+  </body>
+</html>

@@ -1,7 +1,8 @@
 {
   "scripts": {
     "test": "node shared.test.js",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "demo": "cd demo; yarn; open http://localhost:5173; yarn dev;"
   },
   "type": "module",
   "devDependencies": {

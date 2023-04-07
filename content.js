@@ -300,7 +300,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     data.submitRetriesLeft = 1; // re-init
     data.comboCount = allAllowedValues
       .map((x) => x.length) // otherwise .reduce returns NaN because initialValue=1 wouldn't have .length
-      .reduce((a, b) => a * b);
+      .reduce((a, b) => (b ? a * b : a));
     if (!currentlyAllowedValues) data.comboAt = 0;
 
     shared.setData(data, async function () {
@@ -314,10 +314,34 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
         });
       }, 1000);
       log("COMBOS: list of allInputs", allInputs);
+      await tryAllLastValuesFirst(allInputs, allAllowedValues);
+      resetAllInputs();
       await recursivelyTryCombos(allInputs, allAllowedValues);
       log("COMBOS: list of allInputs", allInputs);
       stopAutomation();
     });
+  }
+
+  async function tryAllLastValuesFirst(allInputs, allAllowedValues) {
+    await sleep();
+    if (data.continueAutomation) {
+      allInputs.forEach(async function (input, index) {
+        const isInputCurrentlyVisible = isVisible(input);
+        if (isInputCurrentlyVisible) {
+          let allowedVals = [...allAllowedValues[index]];
+          allowedVals = getUniqueValuesForRepeatSubmit(input, allowedVals, -1);
+          const lastAllowedValue = allowedVals.slice(-1)[0];
+
+          const safeToClickOrChange =
+            !input.type || (input.type !== "file" && input.type !== "color");
+
+          if (safeToClickOrChange) input?.click?.();
+          input[dotValueForType(input.type)] = lastAllowedValue;
+          if (safeToClickOrChange) input.dispatchEvent?.(new Event("change"));
+        }
+      });
+      trySubmit(allInputs);
+    }
   }
 
   async function recursivelyTryCombos(allInputs, allAllowedValues, index = 0) {
@@ -339,7 +363,11 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
           const value = allowedVals[v];
           const isInputCurrentlyVisible = isVisible(input);
           if (isInputCurrentlyVisible) {
+            const safeToClickOrChange =
+              !input.type || (input.type !== "file" && input.type !== "color");
+            if (safeToClickOrChange) input?.click?.();
             input[dotValueForType(input.type)] = value;
+            if (safeToClickOrChange) input.dispatchEvent?.(new Event("change"));
             data.comboAt = getComboNumber(allInputs, allAllowedValues, index);
             shared.setData(data); // putting recurse() in the callback seems to break the sequence
             await sleep();
@@ -354,27 +382,34 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
         if (canRecurse) {
           await recursivelyTryCombos(allInputs, allAllowedValues, index + 1);
         } else if (/* ready for submit input && */ data.continueAutomation) {
-          if (!isVisible($(data.submit_selector))) {
-            log(
-              `COMBOS: ❌ Submit input isn't visible: ${data.submit_selector}`,
-              allInputs.map((element) => element[dotValueForType(element.type)])
-            );
-          } else if ($(data.submit_selector).disabled) {
-            log(
-              `COMBOS: ❌ Submit input is disabled: ${data.submit_selector}`,
-              allInputs.map((element) => element[dotValueForType(element.type)])
-            );
-          } else {
-            log(
-              `COMBOS: ✅ Can hit submit: ${data.submit_selector}`,
-              allInputs.map((element) => element[dotValueForType(element.type)])
-            );
-            if (data.submit_combos) {
-              $(data.submit_selector).click();
-            }
-          }
+          trySubmit(allInputs);
         }
       }
+    }
+  }
+
+  function trySubmit(allInputs) {
+    if (!isVisible($(data.submit_selector))) {
+      log(
+        `COMBOS: ❌ Submit input isn't visible: ${data.submit_selector}`,
+        allInputs.map((element) => element[dotValueForType(element.type)])
+      );
+      // resetAllInputs();
+    } else if ($(data.submit_selector).disabled) {
+      log(
+        `COMBOS: ❌ Submit input is disabled: ${data.submit_selector}`,
+        allInputs.map((element) => element[dotValueForType(element.type)])
+      );
+      // resetAllInputs();
+    } else {
+      log(
+        `COMBOS: ✅ Can hit submit: ${data.submit_selector}`,
+        allInputs.map((element) => element[dotValueForType(element.type)])
+      );
+      if (data.submit_combos) {
+        $(data.submit_selector).click();
+      }
+      // resetAllInputs();
     }
   }
 
@@ -383,14 +418,14 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     const submitInputElements = $$(
       data.submit_selector || defaultSubmitSelector
     );
-    return [...$$(possibleFormInputs)]
-      .filter((element) => {
-        const isNotSubmitInput = [...submitInputElements].every(
-          (submitElement) => submitElement !== element
-        );
-        return /*isVisible(element) &&*/ isNotSubmitInput;
-      })
-      .reverse(); // so first input changes most, for visual reassurance;
+    return [...$$(possibleFormInputs)].filter((element) => {
+      const isNotSubmitInput = [...submitInputElements].every(
+        (submitElement) => submitElement !== element
+      );
+      return /*isVisible(element) &&*/ isNotSubmitInput;
+    });
+    /* don't .reverse() so that complex visibility logic works better, assuming earlier items hide/show later items */
+    // .reverse(); // so first input changes most, for visual reassurance;
   }
 
   function isVisible(element) {
@@ -398,7 +433,19 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     const computedStyles = getComputedStyle(element);
     return (
       computedStyles.visibility !== "hidden" &&
-      computedStyles.display !== "none"
+      computedStyles.display !== "none" &&
+      !isAnyAncestorDisplayNone(element)
+    );
+  }
+
+  function isAnyAncestorDisplayNone(element) {
+    const hasParent = element?.parentElement;
+    if (!hasParent) return false;
+
+    const computedStyles = getComputedStyle(element.parentElement);
+    return (
+      computedStyles.display === "none" ||
+      isAnyAncestorDisplayNone(element.parentElement)
     );
   }
 
@@ -462,10 +509,9 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   }
 
   function getFallbackValues(formInputElement) {
-    if (
-      formInputElement.tagName !== "INPUT" &&
-      formInputElement.tagName !== "TEXTAREA"
-    ) {
+    if (formInputElement.tagName === "TEXTAREA") {
+      return []; // trigger other functions to give textarea ['', `test${#}`] just in case
+    } else if (formInputElement.tagName !== "INPUT") {
       return ["", "test"];
     }
     const now = new Date();
@@ -474,16 +520,16 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       case "checkbox":
         return [false, true];
       case "color":
-        return ["", "#ff0000"];
+        return ["#ff0000"]; // '' isn't allowed for color
       case "date":
-        return ["", now];
+        return [now]; // '' isn't allowed for date
       case "datetime-local":
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         return ["", now.toISOString().slice(0, 16)];
       case "email":
         return ["", "test@test.com"];
       case "file":
-        return ["", "C:\\fakepath\\test.txt"];
+        return ["" /*, "C:\\fakepath\\test.txt"*/]; // not allowed to programmatically set non-empty file path
       case "month":
         const month = String(now.getMonth()).padStart(2, "0");
         return ["", `${year}-${month}`];
@@ -508,8 +554,9 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       case "url":
         return ["", "https://example.com"];
       case "week":
-        const days = Math.floor((now - year) / (24 * 60 * 60 * 1000));
-        const week = Math.ceil((now.getDay() + 1 + days) / 7);
+        const yearStartDate = new Date(year, 0, 1);
+        const days = Math.floor((now - yearStartDate) / (24 * 60 * 60 * 1000));
+        const week = Math.ceil(days / 7);
         return ["", `${year}-W${week}`];
       default:
         return ["", "test"];
@@ -517,16 +564,23 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   }
 
   /** must return an array */
-  function getUniqueValuesForRepeatSubmit(inputElement, defaultValues, index) {
-    const values = [...defaultValues, ...getDatalist(inputElement)];
+  function getUniqueValuesForRepeatSubmit(
+    inputElement,
+    defaultValues,
+    index = 0
+  ) {
+    const valuesArray = [...defaultValues, ...getDatalist(inputElement)];
+    if (inputElement.tagName === "TEXTAREA") {
+      return ["", `test${index}`];
+    }
     switch (inputElement.type) {
       case "checkbox":
       case "color":
       case "date":
       case "datetime-local":
-        return [...values];
+        return valuesArray;
       case "email":
-        return ["", `test${index}@test.com`, ...values];
+        return ["", `test${index}@test.com`];
       case "file":
       case "month":
       case "number":
@@ -536,15 +590,15 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       case "search":
       case "submit":
       case "tel":
-        return [...values];
+        return valuesArray;
       case "text":
-        return ["", `test${index}`, ...values];
+        return ["", `test${index}`];
       case "time":
       case "url":
       case "week":
-        return [...values];
+        return valuesArray;
       default:
-        return [...values];
+        return valuesArray;
     }
   }
 
@@ -556,6 +610,18 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     );
     // log("currentValues", currentValues, "allowedVals", allowedVals);
     return shared.getComboNumberFromValues(currentValues, allowedVals);
+  }
+
+  function resetAllInputs() {
+    // TODO: fix timing issue when called in recursivelyTryCombos > recurse > trySubmit > resetAllInputs
+    const possibleFormInputs = `input:not([type="submit"]):not([type="hidden"]), select, textarea`; // not button?
+    $$(possibleFormInputs).forEach((input) => {
+      const safeToClickOrChange =
+        !input.type || (input.type !== "file" && input.type !== "color");
+      if (safeToClickOrChange) input?.click?.();
+      if (input.type !== "color") input[dotValueForType(input.type)] = null;
+      if (safeToClickOrChange) input.dispatchEvent?.(new Event("change"));
+    });
   }
 
   const tabIcon = $('[rel="icon"]')?.href;
