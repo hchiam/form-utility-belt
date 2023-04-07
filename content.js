@@ -363,11 +363,13 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
               `COMBOS: ❌ Submit input isn't visible: ${data.submit_selector}`,
               allInputs.map((element) => element[dotValueForType(element.type)])
             );
+            resetAllInputs();
           } else if ($(data.submit_selector).disabled) {
             log(
               `COMBOS: ❌ Submit input is disabled: ${data.submit_selector}`,
               allInputs.map((element) => element[dotValueForType(element.type)])
             );
+            resetAllInputs();
           } else {
             log(
               `COMBOS: ✅ Can hit submit: ${data.submit_selector}`,
@@ -376,6 +378,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
             if (data.submit_combos) {
               $(data.submit_selector).click();
             }
+            resetAllInputs();
           }
         }
       }
@@ -579,6 +582,18 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     );
     // log("currentValues", currentValues, "allowedVals", allowedVals);
     return shared.getComboNumberFromValues(currentValues, allowedVals);
+  }
+
+  function resetAllInputs() {
+    return; // TODO: disable for now - need to fix timing issue
+    const possibleFormInputs = `input:not([type="submit"]):not([type="hidden"]), select, textarea`; // not button?
+    $$(possibleFormInputs).forEach((input) => {
+      const safeToClickOrChange =
+        !input.type || (input.type !== "file" && input.type !== "color");
+      if (safeToClickOrChange) input?.click?.();
+      if (input.type !== "color") input[dotValueForType(input.type)] = null;
+      if (safeToClickOrChange) input.dispatchEvent?.(new Event("change"));
+    });
   }
 
   const tabIcon = $('[rel="icon"]')?.href;
