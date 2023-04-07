@@ -613,7 +613,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   }
 
   function resetAllInputs() {
-    // TODO: fix timing issue
+    // TODO: fix timing issue when called in recursivelyTryCombos > recurse > trySubmit > resetAllInputs
     const possibleFormInputs = `input:not([type="submit"]):not([type="hidden"]), select, textarea`; // not button?
     $$(possibleFormInputs).forEach((input) => {
       const safeToClickOrChange =
