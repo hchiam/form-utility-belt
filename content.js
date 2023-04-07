@@ -398,7 +398,19 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     const computedStyles = getComputedStyle(element);
     return (
       computedStyles.visibility !== "hidden" &&
-      computedStyles.display !== "none"
+      computedStyles.display !== "none" &&
+      !isAnyAncestorDisplayNone(element)
+    );
+  }
+
+  function isAnyAncestorDisplayNone(element) {
+    const hasParent = element?.parentElement;
+    if (!hasParent) return false;
+
+    const computedStyles = getComputedStyle(element.parentElement);
+    return (
+      computedStyles.display === "none" ||
+      isAnyAncestorDisplayNone(element.parentElement)
     );
   }
 
