@@ -520,9 +520,9 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       case "checkbox":
         return [false, true];
       case "color":
-        return ["#ff0000"];
+        return ["#ff0000"]; // '' isn't allowed for color
       case "date":
-        return [now];
+        return [now]; // '' isn't allowed for date
       case "datetime-local":
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         return ["", now.toISOString().slice(0, 16)];
