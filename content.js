@@ -363,13 +363,13 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
               `COMBOS: ❌ Submit input isn't visible: ${data.submit_selector}`,
               allInputs.map((element) => element[dotValueForType(element.type)])
             );
-            resetAllInputs();
+            // resetAllInputs();
           } else if ($(data.submit_selector).disabled) {
             log(
               `COMBOS: ❌ Submit input is disabled: ${data.submit_selector}`,
               allInputs.map((element) => element[dotValueForType(element.type)])
             );
-            resetAllInputs();
+            // resetAllInputs();
           } else {
             log(
               `COMBOS: ✅ Can hit submit: ${data.submit_selector}`,
@@ -378,7 +378,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
             if (data.submit_combos) {
               $(data.submit_selector).click();
             }
-            resetAllInputs();
+            // resetAllInputs();
           }
         }
       }
@@ -585,7 +585,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   }
 
   function resetAllInputs() {
-    return; // TODO: disable for now - need to fix timing issue
+    // TODO: fix timing issue
     const possibleFormInputs = `input:not([type="submit"]):not([type="hidden"]), select, textarea`; // not button?
     $$(possibleFormInputs).forEach((input) => {
       const safeToClickOrChange =
