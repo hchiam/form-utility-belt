@@ -476,7 +476,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   function getFallbackValues(formInputElement) {
     if (
       formInputElement.tagName !== "INPUT" &&
-      formInputElement.tagName !== "TEXTAREA"
+      formInputElement.tagName !== "TEXTAREA" // give textarea test${#} just in case
     ) {
       return ["", "test"];
     }
@@ -531,15 +531,15 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
 
   /** must return an array */
   function getUniqueValuesForRepeatSubmit(inputElement, defaultValues, index) {
-    const values = [...defaultValues, ...getDatalist(inputElement)];
+    const valuesArray = [...defaultValues, ...getDatalist(inputElement)];
     switch (inputElement.type) {
       case "checkbox":
       case "color":
       case "date":
       case "datetime-local":
-        return [...values];
+        return valuesArray;
       case "email":
-        return ["", `test${index}@test.com`, ...values];
+        return ["", `test${index}@test.com`];
       case "file":
       case "month":
       case "number":
@@ -549,15 +549,15 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       case "search":
       case "submit":
       case "tel":
-        return [...values];
+        return valuesArray;
       case "text":
-        return ["", `test${index}`, ...values];
+        return ["", `test${index}`];
       case "time":
       case "url":
       case "week":
-        return [...values];
+        return valuesArray;
       default:
-        return [...values];
+        return valuesArray;
     }
   }
 
