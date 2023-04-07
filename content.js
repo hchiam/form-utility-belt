@@ -314,10 +314,34 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
         });
       }, 1000);
       log("COMBOS: list of allInputs", allInputs);
+      await tryAllLastValuesFirst(allInputs, allAllowedValues);
+      resetAllInputs();
       await recursivelyTryCombos(allInputs, allAllowedValues);
       log("COMBOS: list of allInputs", allInputs);
       stopAutomation();
     });
+  }
+
+  async function tryAllLastValuesFirst(allInputs, allAllowedValues) {
+    await sleep();
+    if (data.continueAutomation) {
+      allInputs.forEach(async function (input, index) {
+        const isInputCurrentlyVisible = isVisible(input);
+        if (isInputCurrentlyVisible) {
+          let allowedVals = [...allAllowedValues[index]];
+          allowedVals = getUniqueValuesForRepeatSubmit(input, allowedVals, -1);
+          const lastAllowedValue = allowedVals.slice(-1)[0];
+
+          const safeToClickOrChange =
+            !input.type || (input.type !== "file" && input.type !== "color");
+
+          if (safeToClickOrChange) input?.click?.();
+          input[dotValueForType(input.type)] = lastAllowedValue;
+          if (safeToClickOrChange) input.dispatchEvent?.(new Event("change"));
+        }
+      });
+      trySubmit(allInputs);
+    }
   }
 
   async function recursivelyTryCombos(allInputs, allAllowedValues, index = 0) {
@@ -358,30 +382,34 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
         if (canRecurse) {
           await recursivelyTryCombos(allInputs, allAllowedValues, index + 1);
         } else if (/* ready for submit input && */ data.continueAutomation) {
-          if (!isVisible($(data.submit_selector))) {
-            log(
-              `COMBOS: ❌ Submit input isn't visible: ${data.submit_selector}`,
-              allInputs.map((element) => element[dotValueForType(element.type)])
-            );
-            // resetAllInputs();
-          } else if ($(data.submit_selector).disabled) {
-            log(
-              `COMBOS: ❌ Submit input is disabled: ${data.submit_selector}`,
-              allInputs.map((element) => element[dotValueForType(element.type)])
-            );
-            // resetAllInputs();
-          } else {
-            log(
-              `COMBOS: ✅ Can hit submit: ${data.submit_selector}`,
-              allInputs.map((element) => element[dotValueForType(element.type)])
-            );
-            if (data.submit_combos) {
-              $(data.submit_selector).click();
-            }
-            // resetAllInputs();
-          }
+          trySubmit(allInputs);
         }
       }
+    }
+  }
+
+  function trySubmit(allInputs) {
+    if (!isVisible($(data.submit_selector))) {
+      log(
+        `COMBOS: ❌ Submit input isn't visible: ${data.submit_selector}`,
+        allInputs.map((element) => element[dotValueForType(element.type)])
+      );
+      // resetAllInputs();
+    } else if ($(data.submit_selector).disabled) {
+      log(
+        `COMBOS: ❌ Submit input is disabled: ${data.submit_selector}`,
+        allInputs.map((element) => element[dotValueForType(element.type)])
+      );
+      // resetAllInputs();
+    } else {
+      log(
+        `COMBOS: ✅ Can hit submit: ${data.submit_selector}`,
+        allInputs.map((element) => element[dotValueForType(element.type)])
+      );
+      if (data.submit_combos) {
+        $(data.submit_selector).click();
+      }
+      // resetAllInputs();
     }
   }
 
