@@ -300,7 +300,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     data.submitRetriesLeft = 1; // re-init
     data.comboCount = allAllowedValues
       .map((x) => x.length) // otherwise .reduce returns NaN because initialValue=1 wouldn't have .length
-      .reduce((a, b) => a * b);
+      .reduce((a, b) => (b ? a * b : a));
     if (!currentlyAllowedValues) data.comboAt = 0;
 
     shared.setData(data, async function () {
@@ -474,10 +474,9 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   }
 
   function getFallbackValues(formInputElement) {
-    if (
-      formInputElement.tagName !== "INPUT" &&
-      formInputElement.tagName !== "TEXTAREA" // give textarea test${#} just in case
-    ) {
+    if (formInputElement.tagName === "TEXTAREA") {
+      return []; // trigger other functions to give textarea ['', `test${#}`] just in case
+    } else if (formInputElement.tagName !== "INPUT") {
       return ["", "test"];
     }
     const now = new Date();
@@ -530,8 +529,15 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   }
 
   /** must return an array */
-  function getUniqueValuesForRepeatSubmit(inputElement, defaultValues, index) {
+  function getUniqueValuesForRepeatSubmit(
+    inputElement,
+    defaultValues,
+    index = 0
+  ) {
     const valuesArray = [...defaultValues, ...getDatalist(inputElement)];
+    if (inputElement.tagName === "TEXTAREA") {
+      return ["", `test${index}`];
+    }
     switch (inputElement.type) {
       case "checkbox":
       case "color":
