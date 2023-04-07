@@ -280,9 +280,17 @@ Do you still want to continue?`);
     sendResponse
   ) {
     if (request.action === "change-icon") {
-      // chrome.action.setIcon({
-      //   path: request.value,
-      // });
+      // try {
+      //   chrome.action
+      //     .setIcon({
+      //       path: request.value,
+      //     })
+      //     .catch((e) => {
+      //       console.log(e);
+      //     });
+      // } catch (e) {
+      //   console.log(e);
+      // }
     } else if (request.action === "stop-combos_content") {
       shared.beep();
       combosElement.innerText = "Try all combinations";
