@@ -9,18 +9,18 @@
   </head>
   <body>
     <main>
+      <div>
+        <select>
+          <option value="">- Please select -</option>
+          <option value="option 1">option 1</option>
+          <option value="show hidden">show hidden</option>
+        </select>
+      </div>
       <div style="visibility: hidden">
         <input id="parent_visibility_hidden" type="text" />
       </div>
       <div style="display: none">
         <input id="parent_display_none" type="text" />
-      </div>
-      <div>
-        <select>
-          <option value="">- Please select -</option>
-          <option value="Apples">Apples</option>
-          <option value="Bananas">Bananas</option>
-        </select>
       </div>
       <div>
         <textarea placeholder="textarea"></textarea>
@@ -47,5 +47,7 @@
       <div><input type="url" name="url" placeholder="url" /></div>
       <div><input type="week" name="week" /></div>
     </main>
+
+    <script src="index.js"></script>
   </body>
 </html>

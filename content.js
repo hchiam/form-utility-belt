@@ -339,7 +339,11 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
           const value = allowedVals[v];
           const isInputCurrentlyVisible = isVisible(input);
           if (isInputCurrentlyVisible) {
+            const safeToClickOrChange =
+              !input.type || (input.type !== "file" && input.type !== "color");
+            if (safeToClickOrChange) input?.click?.();
             input[dotValueForType(input.type)] = value;
+            if (safeToClickOrChange) input.dispatchEvent?.(new Event("change"));
             data.comboAt = getComboNumber(allInputs, allAllowedValues, index);
             shared.setData(data); // putting recurse() in the callback seems to break the sequence
             await sleep();
@@ -383,14 +387,14 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     const submitInputElements = $$(
       data.submit_selector || defaultSubmitSelector
     );
-    return [...$$(possibleFormInputs)]
-      .filter((element) => {
-        const isNotSubmitInput = [...submitInputElements].every(
-          (submitElement) => submitElement !== element
-        );
-        return /*isVisible(element) &&*/ isNotSubmitInput;
-      })
-      .reverse(); // so first input changes most, for visual reassurance;
+    return [...$$(possibleFormInputs)].filter((element) => {
+      const isNotSubmitInput = [...submitInputElements].every(
+        (submitElement) => submitElement !== element
+      );
+      return /*isVisible(element) &&*/ isNotSubmitInput;
+    });
+    /* don't .reverse() so that complex visibility logic works better, assuming earlier items hide/show later items */
+    // .reverse(); // so first input changes most, for visual reassurance;
   }
 
   function isVisible(element) {
