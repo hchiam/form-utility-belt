@@ -159,6 +159,9 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       (element.getAttribute("id") ? "#" + element.getAttribute("id") : "") +
       (element.getAttribute("class")
         ? "." + element.getAttribute("class").trim().split(" ").join(".")
+        : "") +
+      (element.tagName === "INPUT" && element.type
+        ? `[type="${element.type}"]`
         : "");
 
     return thisSelector;
@@ -177,7 +180,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
               ? "." +
                 x.className.trim().replace(/  +/g, " ").split(" ").join(".")
               : "") +
-            (x.type ? `[type="${x.type}"]` : "")
+            (x.tagName === "input" && x.type ? `[type="${x.type}"]` : "")
         )
         .reverse()
         .join(">") +
