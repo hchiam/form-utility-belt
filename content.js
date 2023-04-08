@@ -109,7 +109,7 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       data.record = iifeStart + data.record + iifeEnd;
       data.summary += actionSummary;
       shared.setData(data);
-      log(actionSummary);
+      if (!data.continueAutomation) log(actionSummary);
     }
 
     function getActiveOneOnly(selector, element) {
@@ -387,12 +387,12 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
           const isInputCurrentlyVisible = isVisible(input);
           if (!isInputCurrentlyVisible) continue;
 
-          const indexOfValueForInput = comboValuesIndices[i];
+          const indexOfValueToUseForInput = comboValuesIndices[i];
 
           const value = getUniqueValuesForRepeatSubmit(
             input,
-            allAllowedValues[indexOfCurrentInput]
-          )[indexOfValueForInput];
+            allAllowedValues[i]
+          )[indexOfValueToUseForInput];
 
           const safeToClickOrChange =
             !input.type || (input.type !== "file" && input.type !== "color");
@@ -412,19 +412,19 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   function trySubmit(allInputs) {
     if (!isVisible($(data.submit_selector))) {
       log(
-        `COMBO ${data.comboAt}: ❌ Submit input isn't visible: ${data.submit_selector}`,
+        `COMBO ${data.comboAt}/${data.comboCount}: ❌ Submit input isn't visible: ${data.submit_selector}`,
         allInputs.map((element) => element[dotValueForType(element.type)])
       );
       // resetAllInputs();
     } else if ($(data.submit_selector).disabled) {
       log(
-        `COMBO ${data.comboAt}: ❌ Submit input is disabled: ${data.submit_selector}`,
+        `COMBO ${data.comboAt}/${data.comboCount}: ❌ Submit input is disabled: ${data.submit_selector}`,
         allInputs.map((element) => element[dotValueForType(element.type)])
       );
       // resetAllInputs();
     } else {
       log(
-        `COMBO ${data.comboAt}: ✅ Can hit submit: ${data.submit_selector}`,
+        `COMBO ${data.comboAt}/${data.comboCount}: ✅ Can hit submit: ${data.submit_selector}`,
         allInputs.map((element) => element[dotValueForType(element.type)])
       );
       if (data.submit_combos) {
@@ -531,7 +531,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
 
   function getFallbackValues(formInputElement) {
     if (formInputElement.tagName === "TEXTAREA") {
-      return []; // trigger other functions to give textarea ['', `test${#}`] just in case
+      return ["", "test"];
     } else if (formInputElement.tagName !== "INPUT") {
       return ["", "test"];
     }
@@ -589,6 +589,8 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     const valuesArray = [...defaultValues];
     if (inputElement.tagName === "TEXTAREA") {
       return ["", `test${data.comboAt}`];
+    } else if (inputElement.tagName !== "INPUT") {
+      return valuesArray;
     }
     switch (inputElement.type) {
       case "checkbox":
