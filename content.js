@@ -9,7 +9,7 @@
 
   let data = { ...shared.defaultData };
 
-  const recordPrefix = `const $=document.querySelector.bind(document);
+  const recordPrefix = `const $$=document.querySelectorAll.bind(document);
 async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
   const iifeStart = `;(async function(){\n`;
   const iifeStartRegex = `;\\(async function\\(\\)\\{\\n`;
@@ -45,7 +45,7 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
   }
 
   function reinitializeRecordUponFirstInteraction() {
-    Array.from(document.querySelectorAll("*")).forEach((element) =>
+    Array.from($$("*")).forEach((element) =>
       element.addEventListener("change", reinitializeRecord)
     );
   }
@@ -56,13 +56,13 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
     data.summary = "";
     shared.setData(data);
     log("\n\nNew recording started.\n\n\n");
-    Array.from(document.querySelectorAll("*")).forEach((element) =>
+    Array.from($$("*")).forEach((element) =>
       element.removeEventListener("change", reinitializeRecord)
     );
   }
 
   function record() {
-    Array.from(document.querySelectorAll("*")).forEach((element) =>
+    Array.from($$("*")).forEach((element) =>
       element.addEventListener("change", handleChangesInAnyElement)
     );
 
@@ -96,7 +96,8 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
 
       data.recordIndex++;
       const actionCode = convertActionToCode(action, element, data.recordIndex);
-      const actionSummary = `${thisSelector} = ${
+      const nth = $$(selector).length > 1 ? `[${index}]` : "";
+      const actionSummary = `${thisSelector}${nth} = ${
         String(value) === String(value).trim() && value !== ""
           ? value
           : `"${value}"`
@@ -115,7 +116,7 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
     function getActiveOneOnly(selector, element) {
       let index = 0;
 
-      const results = document.querySelectorAll(selector);
+      const results = $$(selector);
       const isUnique = results && results.length < 2;
       if (isUnique) return 0;
 
@@ -138,15 +139,14 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
         type = element.type;
       }
       const setValue = dotValueForType(type) || "value";
-      const selector = `${action.selector}${
-        action.index ? ":nth-of-type(" + (action.index + 1) + ")" : ""
-      }`;
+      const selector = action.selector;
+      const nth = action.index ? `[${action.index}]` : "[0]";
       const value =
         typeof action.value === "string"
           ? action.value.replace(/`/g, "\\`")
           : action.value;
       return `await sleep();
-var e${recordIndex}=$('${selector}');
+var e${recordIndex}=$$('${selector}')${nth};
 e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex})e${recordIndex}.${setValue}=\`${value}\`;e${recordIndex}?.dispatchEvent?.(new Event('change'));`;
     }
   }
