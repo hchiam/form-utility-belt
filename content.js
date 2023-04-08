@@ -344,6 +344,8 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
         if (safeToClickOrChange) input?.click?.();
         input[dotValueForType(input.type)] = lastAllowedValue;
         if (safeToClickOrChange) input.dispatchEvent?.(new Event("change"));
+
+        await sleep();
       }
     });
 
