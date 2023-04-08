@@ -62,7 +62,7 @@ export function getComboNumberFromValues(currentValues, allAllowedValues) {
   let multiplier = 1;
 
   for (let i = currentValues.length - 1; i >= 0; i--) {
-    const allowedValuesForSlot = allAllowedValues[i]; // TODO: not getting the right ones?
+    const allowedValuesForSlot = allAllowedValues[i];
     const value = currentValues[i];
     const valueIndex = allowedValuesForSlot.indexOf(value);
     comboNumber += valueIndex > -1 ? valueIndex * multiplier : 0;
