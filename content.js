@@ -321,11 +321,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
         await tryAllLastValuesFirst(allInputs, allAllowedValues);
         resetAllInputs();
       }
-      await recursivelyTryCombos(
-        allInputs,
-        allAllowedValues,
-        new Array(allInputs.length)
-      );
+      await recursivelyTryCombos(allInputs, allAllowedValues);
       log("COMBOS: list of allInputs", allInputs);
       stopAutomation();
     });
@@ -357,67 +353,58 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   async function recursivelyTryCombos(
     allInputs,
     allAllowedValues,
-    comboValuesIndices,
-    index = 0
+    indexOfCurrentInput = 0,
+    comboValuesIndices
   ) {
-    await sleep();
-    if (data.continueAutomation) {
-      const input = allInputs[index];
-      let allowedVals = allAllowedValues[index];
-      // allowedVals = getUniqueValuesForRepeatSubmit(input, allowedVals);
-      // console.log("---allowedVals", allowedVals, data.comboAt);
+    if (!data.continueAutomation) return;
 
-      const isInputCurrentlyVisible = isVisible(input);
-      if (!isInputCurrentlyVisible) {
-        comboValuesIndices[index] = 0;
-        await recurse(input);
-      } else {
-        for (
-          let v = 0;
-          v < allowedVals.length && data.continueAutomation;
-          v++
-        ) {
-          comboValuesIndices[index] = v;
-          await recurse(comboValuesIndices);
+    if (!comboValuesIndices) {
+      comboValuesIndices = new Array(allInputs.length).fill(0);
+    }
+
+    // for each value of the current input:
+    for (let v = 0; v < allAllowedValues[indexOfCurrentInput].length; v++) {
+      comboValuesIndices[indexOfCurrentInput] = v;
+
+      const canRecurse = indexOfCurrentInput + 1 < allInputs.length;
+
+      if (canRecurse) {
+        // try all the values of the next input:
+        await recursivelyTryCombos(
+          allInputs,
+          allAllowedValues,
+          indexOfCurrentInput + 1,
+          comboValuesIndices
+        );
+      } else if (/* ready for submit input && */ data.continueAutomation) {
+        data.comboAt++;
+        await shared.setData(data);
+
+        // now set the current combo's values of all visible inputs:
+        for (let i = 0; i < allInputs.length; i++) {
+          const input = allInputs[i];
+
+          const isInputCurrentlyVisible = isVisible(input);
+          if (!isInputCurrentlyVisible) continue;
+
+          const indexOfValueForInput = comboValuesIndices[i];
+
+          const value = getUniqueValuesForRepeatSubmit(
+            input,
+            allAllowedValues[indexOfCurrentInput]
+          )[indexOfValueForInput];
+
+          const safeToClickOrChange =
+            !input.type || (input.type !== "file" && input.type !== "color");
+
+          if (safeToClickOrChange) input?.click?.();
+          input[dotValueForType(input.type)] = value;
+          if (safeToClickOrChange) input.dispatchEvent?.(new Event("change"));
+
+          await sleep();
         }
-      }
 
-      async function recurse(comboValuesIndices) {
-        const canRecurse =
-          index + 1 < allInputs.length && data.continueAutomation;
-        if (canRecurse) {
-          await recursivelyTryCombos(
-            allInputs,
-            allAllowedValues,
-            comboValuesIndices,
-            index + 1
-          );
-        } else if (/* ready for submit input && */ data.continueAutomation) {
-          data.comboAt++;
-          await shared.setData(data);
-
-          for (let i = 0; i < allInputs.length; i++) {
-            const input = allInputs[i];
-
-            const inputValueIndex = comboValuesIndices[i];
-
-            const value = getUniqueValuesForRepeatSubmit(
-              input,
-              allAllowedValues[index]
-            )[inputValueIndex];
-
-            const safeToClickOrChange =
-              !input.type || (input.type !== "file" && input.type !== "color");
-
-            if (safeToClickOrChange) input?.click?.();
-            input[dotValueForType(input.type)] = value;
-            if (safeToClickOrChange) input.dispatchEvent?.(new Event("change"));
-
-            await sleep();
-          }
-
-          await trySubmit(allInputs);
-        }
+        await trySubmit(allInputs);
       }
     }
   }
