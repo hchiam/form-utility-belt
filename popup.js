@@ -59,10 +59,12 @@
         "Manually refresh the page to let the Form Utility Belt start recording steps."
       );
     });
-    isRequiredSelectorElement.addEventListener("change", () => {
+    isRequiredSelectorElement.addEventListener("keyup", () => {
       data.is_required_selector =
         isRequiredSelectorElement.value || defaultIsRequiredSelector;
       shared.setData(data);
+    });
+    isRequiredSelectorElement.addEventListener("change", () => {
       alert(
         "Manually refresh the page to let the Form Utility Belt start recording steps."
       );
