@@ -374,7 +374,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       const canRecurse = indexOfCurrentInput + 1 < allInputs.length;
 
       if (canRecurse) {
-        // try all the values of the next input:
+        // even if current input isn't visible try all the values of the next input:
         await recursivelyTryCombos(
           allInputs,
           allAllowedValues,
