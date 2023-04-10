@@ -406,7 +406,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
           input[dotValueForType(input.type)] = value;
           if (safeToClickOrChange) input.dispatchEvent?.(new Event("change"));
 
-          await sleep();
+          await sleep(10);
         }
 
         await trySubmit(allInputs);
