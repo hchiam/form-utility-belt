@@ -15,8 +15,8 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
   const iifeStartRegex = `;\\(async function\\(\\)\\{\\n`;
   const iifeEnd = `\n})();`;
   const iifeEndRegex = `\\n\\}\\)\\(\\);`;
-  $ = document.querySelector.bind(document);
-  $$ = document.querySelectorAll.bind(document);
+  const $ = document.querySelector.bind(document);
+  const $$ = document.querySelectorAll.bind(document);
   async function sleep(ms) {
     await new Promise((r) => setTimeout(r, ms || 100));
   }
