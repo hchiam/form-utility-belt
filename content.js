@@ -323,10 +323,10 @@ ${handleRadioOrCheckbox}e${recordIndex}?.click?.();if(e${recordIndex} && "${setV
         });
       }, 1000);
       log("COMBOS: list of allInputs", allInputs);
-      if (data.comboAt === 0) {
-        await tryAllLastValuesFirst(allInputs, allAllowedValues);
-        resetAllInputs();
-      }
+      // if (data.comboAt === 0) {
+      //   await tryAllLastValuesFirst(allInputs, allAllowedValues);
+      //   resetAllInputs();
+      // }
       await recursivelyTryCombos(allInputs, allAllowedValues);
       log("COMBOS: list of allInputs", allInputs);
       stopAutomation();
