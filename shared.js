@@ -1,9 +1,11 @@
 export const defaultHostnames = ["surge.sh"];
 export const defaultSubmitSelector = '[type="submit"]';
+export const defaultIsRequiredSelector = ".isRequired";
 
 export const defaultData = {
   hostnames: [...defaultHostnames],
   submit_selector: defaultSubmitSelector,
+  is_required_selector: defaultIsRequiredSelector,
   submit_combos: false,
   record: "",
   recordIndex: 0,

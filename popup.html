@@ -17,14 +17,24 @@
         placeholder="Allowed <hostname.com>"
         aria-label="hostnames"
     /></label>
-    <label
-      ><b>Submit button CSS selector: </b><br /><i>e.g., [type="submit"]</i>
-      <input
-        id="submit_selector"
-        type="text"
-        placeholder="Submit button selector"
-        value="[type='submit']"
-    /></label>
+    <div class="d-flex">
+      <label
+        ><b>Submit button CSS selector: </b><br /><i>e.g., [type="submit"]</i>
+        <input
+          id="submit_selector"
+          type="text"
+          placeholder="Submit button selector"
+          value="[type='submit']"
+      /></label>
+      <label
+        ><b>Required input CSS selector: </b><br /><i>e.g., .isRequired</i>
+        <input
+          id="is_required_selector"
+          type="text"
+          placeholder="Required input selector"
+          value=".isRequired"
+      /></label>
+    </div>
     <button id="combos" class="experimental">Try all combinations</button>
     <label id="submit_combos_label"
       ><b>and submit per combo:</b

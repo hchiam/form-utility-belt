@@ -6,12 +6,16 @@
 
   const defaultHostnames = shared.defaultHostnames;
   const defaultSubmitSelector = shared.defaultSubmitSelector;
+  const defaultIsRequiredSelector = shared.defaultIsRequiredSelector;
   let progressBarTimer = null;
 
   let data = { ...shared.defaultData };
 
   const hostnamesElement = document.querySelector("#hostnames");
   const submitSelectorElement = document.querySelector("#submit_selector");
+  const isRequiredSelectorElement = document.querySelector(
+    "#is_required_selector"
+  );
   const combosElement = document.querySelector("#combos");
   const submitCombosElement = document.querySelector("#submit_combos");
   const submitCombosLabelElement = document.querySelector(
@@ -46,12 +50,19 @@
       );
     });
     submitSelectorElement.addEventListener("keyup", () => {
-      const defaultSubmitSelector = "[type='submit']";
       data.submit_selector =
         submitSelectorElement.value || defaultSubmitSelector;
       shared.setData(data);
     });
     submitSelectorElement.addEventListener("change", () => {
+      alert(
+        "Manually refresh the page to let the Form Utility Belt start recording steps."
+      );
+    });
+    isRequiredSelectorElement.addEventListener("change", () => {
+      data.is_required_selector =
+        isRequiredSelectorElement.value || defaultIsRequiredSelector;
+      shared.setData(data);
       alert(
         "Manually refresh the page to let the Form Utility Belt start recording steps."
       );
@@ -153,7 +164,8 @@ Do you still want to continue?`);
     shared.getData((updatedData) => {
       data = updatedData;
       hostnamesElement.value = data.hostnames.join(",") || defaultHostnames;
-      submitSelectorElement.value = data.submit_selector;
+      submitSelectorElement.value =
+        data.submit_selector || defaultSubmitSelector;
       if (data.continueAutomation) {
         combosElement.innerText = "PAUSE trying all combinations";
         combosElement.classList.add("on");
@@ -177,6 +189,7 @@ Do you still want to continue?`);
   function enableBasedOnHostnames(hostnames) {
     const disable = !shared.isAllowedHostname(hostnames, data.hostnames);
     submitSelectorElement.disabled = disable;
+    isRequiredSelectorElement.disabled = disable;
     combosElement.disabled = disable;
     submitCombosElement.disabled = disable;
     submitCombosLabelElement.setAttribute("disabled", disable);
