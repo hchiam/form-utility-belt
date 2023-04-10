@@ -163,6 +163,11 @@ button:disabled,
   );
 }
 
+.d-flex {
+  display: flex;
+  gap: 1rem;
+}
+
 .d-none {
   display: none !important;
 }

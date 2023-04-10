@@ -6,6 +6,7 @@
 
   const defaultHostnames = shared.defaultHostnames;
   const defaultSubmitSelector = shared.defaultSubmitSelector;
+  const defaultIsRequiredSelector = shared.defaultIsRequiredSelector;
 
   let data = { ...shared.defaultData };
 
@@ -322,10 +323,10 @@ ${handleRadioOrCheckbox}e${recordIndex}?.click?.();if(e${recordIndex} && "${setV
         });
       }, 1000);
       log("COMBOS: list of allInputs", allInputs);
-      if (data.comboAt === 0) {
-        await tryAllLastValuesFirst(allInputs, allAllowedValues);
-        resetAllInputs();
-      }
+      // if (data.comboAt === 0) {
+      //   await tryAllLastValuesFirst(allInputs, allAllowedValues);
+      //   resetAllInputs();
+      // }
       await recursivelyTryCombos(allInputs, allAllowedValues);
       log("COMBOS: list of allInputs", allInputs);
       stopAutomation();
@@ -437,6 +438,12 @@ ${handleRadioOrCheckbox}e${recordIndex}?.click?.();if(e${recordIndex} && "${setV
         allInputs.map((element) => element[dotValueForType(element.type)])
       );
       // resetAllInputs();
+    } else if (!areAllVisibleRequiredFilled()) {
+      log(
+        `COMBO ${data.comboAt}/${data.comboCount}: ❌ Can hit submit (${data.submit_selector}), BUT not all the required fields (${data.is_required_selector}) that are visible are filled.`,
+        allInputs.map((element) => element[dotValueForType(element.type)])
+      );
+      // resetAllInputs();
     } else {
       log(
         `COMBO ${data.comboAt}/${data.comboCount}: ✅ Can hit submit: ${data.submit_selector}`,
@@ -447,6 +454,17 @@ ${handleRadioOrCheckbox}e${recordIndex}?.click?.();if(e${recordIndex} && "${setV
       }
       // resetAllInputs();
     }
+  }
+
+  function areAllVisibleRequiredFilled() {
+    const isRequiredSelector =
+      data.is_required_selector || defaultIsRequiredSelector;
+    const isRequired = [...$$(`${isRequiredSelector}:not([type="submit"])`)];
+    const visible = isRequired.filter((e) => isVisible(e));
+    const filled = isRequired.filter(
+      (e) => e.value || e.checked || e.valueAsDate
+    );
+    return visible.length === filled.length;
   }
 
   function getAllInputs() {
