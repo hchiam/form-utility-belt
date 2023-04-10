@@ -180,7 +180,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
               ? "." +
                 x.className.trim().replace(/  +/g, " ").split(" ").join(".")
               : "") +
-            (x.tagName === "input" && x.type ? `[type="${x.type}"]` : "")
+            (x.tagName === "INPUT" && x.type ? `[type="${x.type}"]` : "")
         )
         .reverse()
         .join(">") +
