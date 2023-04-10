@@ -9,14 +9,14 @@
 
   let data = { ...shared.defaultData };
 
-  const recordPrefix = `const $=document.querySelector.bind(document);
+  const recordPrefix = `const $$=document.querySelectorAll.bind(document);
 async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
   const iifeStart = `;(async function(){\n`;
   const iifeStartRegex = `;\\(async function\\(\\)\\{\\n`;
   const iifeEnd = `\n})();`;
   const iifeEndRegex = `\\n\\}\\)\\(\\);`;
-  $ = document.querySelector.bind(document);
-  $$ = document.querySelectorAll.bind(document);
+  const $ = document.querySelector.bind(document);
+  const $$ = document.querySelectorAll.bind(document);
   async function sleep(ms) {
     await new Promise((r) => setTimeout(r, ms || 100));
   }
@@ -45,7 +45,7 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
   }
 
   function reinitializeRecordUponFirstInteraction() {
-    Array.from(document.querySelectorAll("*")).forEach((element) =>
+    Array.from($$("*")).forEach((element) =>
       element.addEventListener("change", reinitializeRecord)
     );
   }
@@ -56,13 +56,13 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
     data.summary = "";
     shared.setData(data);
     log("\n\nNew recording started.\n\n\n");
-    Array.from(document.querySelectorAll("*")).forEach((element) =>
+    Array.from($$("*")).forEach((element) =>
       element.removeEventListener("change", reinitializeRecord)
     );
   }
 
   function record() {
-    Array.from(document.querySelectorAll("*")).forEach((element) =>
+    Array.from($$("*")).forEach((element) =>
       element.addEventListener("change", handleChangesInAnyElement)
     );
 
@@ -96,7 +96,8 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
 
       data.recordIndex++;
       const actionCode = convertActionToCode(action, element, data.recordIndex);
-      const actionSummary = `${thisSelector} = ${
+      const nth = $$(selector).length > 1 ? `[${index}]` : "";
+      const actionSummary = `${thisSelector}${nth} = ${
         String(value) === String(value).trim() && value !== ""
           ? value
           : `"${value}"`
@@ -109,13 +110,13 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       data.record = iifeStart + data.record + iifeEnd;
       data.summary += actionSummary;
       shared.setData(data);
-      log(actionSummary);
+      if (!data.continueAutomation) log(actionSummary);
     }
 
     function getActiveOneOnly(selector, element) {
       let index = 0;
 
-      const results = document.querySelectorAll(selector);
+      const results = $$(selector);
       const isUnique = results && results.length < 2;
       if (isUnique) return 0;
 
@@ -138,15 +139,14 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
         type = element.type;
       }
       const setValue = dotValueForType(type) || "value";
-      const selector = `${action.selector}${
-        action.index ? ":nth-of-type(" + (action.index + 1) + ")" : ""
-      }`;
+      const selector = action.selector;
+      const nth = action.index ? `[${action.index}]` : "[0]";
       const value =
         typeof action.value === "string"
           ? action.value.replace(/`/g, "\\`")
           : action.value;
       return `await sleep();
-var e${recordIndex}=$('${selector}');
+var e${recordIndex}=$$('${selector}')${nth};
 e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex})e${recordIndex}.${setValue}=\`${value}\`;e${recordIndex}?.dispatchEvent?.(new Event('change'));`;
     }
   }
@@ -157,8 +157,11 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     const thisSelector =
       (tagName ? tagName : "") +
       (element.getAttribute("id") ? "#" + element.getAttribute("id") : "") +
-      (element.getAttribute("class")
+      (element.getAttribute("class").trim()
         ? "." + element.getAttribute("class").trim().split(" ").join(".")
+        : "") +
+      (element.tagName === "INPUT" && element.type
+        ? `[type="${element.type}"]`
         : "");
 
     return thisSelector;
@@ -177,7 +180,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
               ? "." +
                 x.className.trim().replace(/  +/g, " ").split(" ").join(".")
               : "") +
-            (x.type ? `[type="${x.type}"]` : "")
+            (x.tagName === "INPUT" && x.type ? `[type="${x.type}"]` : "")
         )
         .reverse()
         .join(">") +
@@ -301,7 +304,10 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     data.comboCount = allAllowedValues
       .map((x) => x.length) // otherwise .reduce returns NaN because initialValue=1 wouldn't have .length
       .reduce((a, b) => (b ? a * b : a));
-    if (!currentlyAllowedValues) data.comboAt = 0;
+    if (!currentlyAllowedValues) {
+      data.comboAt = 0; // just starting (as opposed to continuing where left off)
+      await shared.setData(data);
+    }
 
     shared.setData(data, async function () {
       let timer = setInterval(() => {
@@ -314,8 +320,10 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
         });
       }, 1000);
       log("COMBOS: list of allInputs", allInputs);
-      await tryAllLastValuesFirst(allInputs, allAllowedValues);
-      resetAllInputs();
+      if (data.comboAt === 0) {
+        await tryAllLastValuesFirst(allInputs, allAllowedValues);
+        resetAllInputs();
+      }
       await recursivelyTryCombos(allInputs, allAllowedValues);
       log("COMBOS: list of allInputs", allInputs);
       stopAutomation();
@@ -323,67 +331,85 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   }
 
   async function tryAllLastValuesFirst(allInputs, allAllowedValues) {
-    await sleep();
-    if (data.continueAutomation) {
-      allInputs.forEach(async function (input, index) {
-        const isInputCurrentlyVisible = isVisible(input);
-        if (isInputCurrentlyVisible) {
-          let allowedVals = [...allAllowedValues[index]];
-          allowedVals = getUniqueValuesForRepeatSubmit(input, allowedVals, -1);
-          const lastAllowedValue = allowedVals.slice(-1)[0];
+    data.comboAt = -1; // so that log and allowed values will use -1
+    await shared.setData(data);
+
+    allInputs.forEach(async function (input, index) {
+      const isInputCurrentlyVisible = isVisible(input);
+      if (isInputCurrentlyVisible) {
+        let allowedVals = [...allAllowedValues[index]];
+        allowedVals = getUniqueValuesForRepeatSubmit(input, allowedVals);
+        const lastAllowedValue = allowedVals.slice(-1)[0];
+
+        const safeToClickOrChange =
+          !input.type || (input.type !== "file" && input.type !== "color");
+
+        if (safeToClickOrChange) input?.click?.();
+        input[dotValueForType(input.type)] = lastAllowedValue;
+        if (safeToClickOrChange) input.dispatchEvent?.(new Event("change"));
+
+        await sleep();
+      }
+    });
+
+    await trySubmit(allInputs);
+  }
+
+  async function recursivelyTryCombos(
+    allInputs,
+    allAllowedValues,
+    indexOfCurrentInput = 0,
+    comboValuesIndices
+  ) {
+    if (!data.continueAutomation) return;
+
+    if (!comboValuesIndices) {
+      comboValuesIndices = new Array(allInputs.length).fill(0);
+    }
+
+    // for each value of the current input:
+    for (let v = 0; v < allAllowedValues[indexOfCurrentInput].length; v++) {
+      comboValuesIndices[indexOfCurrentInput] = v;
+
+      const canRecurse = indexOfCurrentInput + 1 < allInputs.length;
+
+      if (canRecurse) {
+        // try all the values of the next input:
+        await recursivelyTryCombos(
+          allInputs,
+          allAllowedValues,
+          indexOfCurrentInput + 1,
+          comboValuesIndices
+        );
+      } else if (/* ready for submit input && */ data.continueAutomation) {
+        data.comboAt++;
+        await shared.setData(data);
+
+        // now set the current combo's values of all visible inputs:
+        for (let i = 0; i < allInputs.length; i++) {
+          const input = allInputs[i];
+
+          const isInputCurrentlyVisible = isVisible(input);
+          if (!isInputCurrentlyVisible) continue;
+
+          const indexOfValueToUseForInput = comboValuesIndices[i];
+
+          const value = getUniqueValuesForRepeatSubmit(
+            input,
+            allAllowedValues[i]
+          )[indexOfValueToUseForInput];
 
           const safeToClickOrChange =
             !input.type || (input.type !== "file" && input.type !== "color");
 
           if (safeToClickOrChange) input?.click?.();
-          input[dotValueForType(input.type)] = lastAllowedValue;
+          input[dotValueForType(input.type)] = value;
           if (safeToClickOrChange) input.dispatchEvent?.(new Event("change"));
-        }
-      });
-      trySubmit(allInputs);
-    }
-  }
 
-  async function recursivelyTryCombos(allInputs, allAllowedValues, index = 0) {
-    await sleep();
-    if (data.continueAutomation) {
-      const input = allInputs[index];
-      let allowedVals = allAllowedValues[index];
-      allowedVals = getUniqueValuesForRepeatSubmit(input, allowedVals, index);
-
-      const isInputCurrentlyVisible = isVisible(input);
-      if (!isInputCurrentlyVisible) {
-        await recurse();
-      } else {
-        for (
-          let v = 0;
-          v < allowedVals.length && data.continueAutomation;
-          v++
-        ) {
-          const value = allowedVals[v];
-          const isInputCurrentlyVisible = isVisible(input);
-          if (isInputCurrentlyVisible) {
-            const safeToClickOrChange =
-              !input.type || (input.type !== "file" && input.type !== "color");
-            if (safeToClickOrChange) input?.click?.();
-            input[dotValueForType(input.type)] = value;
-            if (safeToClickOrChange) input.dispatchEvent?.(new Event("change"));
-            data.comboAt = getComboNumber(allInputs, allAllowedValues, index);
-            shared.setData(data); // putting recurse() in the callback seems to break the sequence
-            await sleep();
-            await recurse();
-          }
+          await sleep(10);
         }
-      }
 
-      async function recurse() {
-        const canRecurse =
-          index + 1 < allInputs.length && data.continueAutomation;
-        if (canRecurse) {
-          await recursivelyTryCombos(allInputs, allAllowedValues, index + 1);
-        } else if (/* ready for submit input && */ data.continueAutomation) {
-          trySubmit(allInputs);
-        }
+        await trySubmit(allInputs);
       }
     }
   }
@@ -391,19 +417,19 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   function trySubmit(allInputs) {
     if (!isVisible($(data.submit_selector))) {
       log(
-        `COMBOS: ❌ Submit input isn't visible: ${data.submit_selector}`,
+        `COMBO ${data.comboAt}/${data.comboCount}: ❌ Submit input isn't visible: ${data.submit_selector}`,
         allInputs.map((element) => element[dotValueForType(element.type)])
       );
       // resetAllInputs();
     } else if ($(data.submit_selector).disabled) {
       log(
-        `COMBOS: ❌ Submit input is disabled: ${data.submit_selector}`,
+        `COMBO ${data.comboAt}/${data.comboCount}: ❌ Submit input is disabled: ${data.submit_selector}`,
         allInputs.map((element) => element[dotValueForType(element.type)])
       );
       // resetAllInputs();
     } else {
       log(
-        `COMBOS: ✅ Can hit submit: ${data.submit_selector}`,
+        `COMBO ${data.comboAt}/${data.comboCount}: ✅ Can hit submit: ${data.submit_selector}`,
         allInputs.map((element) => element[dotValueForType(element.type)])
       );
       if (data.submit_combos) {
@@ -510,7 +536,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
 
   function getFallbackValues(formInputElement) {
     if (formInputElement.tagName === "TEXTAREA") {
-      return []; // trigger other functions to give textarea ['', `test${#}`] just in case
+      return ["", "test"];
     } else if (formInputElement.tagName !== "INPUT") {
       return ["", "test"];
     }
@@ -564,14 +590,12 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   }
 
   /** must return an array */
-  function getUniqueValuesForRepeatSubmit(
-    inputElement,
-    defaultValues,
-    index = 0
-  ) {
-    const valuesArray = [...defaultValues, ...getDatalist(inputElement)];
+  function getUniqueValuesForRepeatSubmit(inputElement, defaultValues) {
+    const valuesArray = [...defaultValues];
     if (inputElement.tagName === "TEXTAREA") {
-      return ["", `test${index}`];
+      return ["", `test${data.comboAt}`];
+    } else if (inputElement.tagName !== "INPUT") {
+      return valuesArray;
     }
     switch (inputElement.type) {
       case "checkbox":
@@ -580,7 +604,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       case "datetime-local":
         return valuesArray;
       case "email":
-        return ["", `test${index}@test.com`];
+        return ["", `test${data.comboAt}@test.com`];
       case "file":
       case "month":
       case "number":
@@ -592,7 +616,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       case "tel":
         return valuesArray;
       case "text":
-        return ["", `test${index}`];
+        return ["", `test${data.comboAt}`];
       case "time":
       case "url":
       case "week":
@@ -603,10 +627,10 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   }
 
   /** allInputs=[HTML elements] and allAllowedValues=[] */
-  function getComboNumber(allInputs, allAllowedValues, index = 0) {
+  function getComboNumber(allInputs, allAllowedValues) {
     const currentValues = allInputs.map((x) => x[dotValueForType(x.type)]);
     let allowedVals = allInputs.map((input, i) =>
-      getUniqueValuesForRepeatSubmit(input, allAllowedValues[i], index)
+      getUniqueValuesForRepeatSubmit(input, allAllowedValues[i])
     );
     // log("currentValues", currentValues, "allowedVals", allowedVals);
     return shared.getComboNumberFromValues(currentValues, allowedVals);

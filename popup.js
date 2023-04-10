@@ -227,7 +227,7 @@ Do you still want to continue?`);
     shared.getData((updatedData) => {
       data = updatedData;
       const max = Number(data.comboCount || 0);
-      const value = Math.abs(Number(data.comboAt || 0));
+      const value = Number(data.comboAt || 0) + 1; // +1 because counts from 0
       const percent = Math.round((100 * value) / max);
       setCSSVariable("--progress", `${percent}%`, combosElement);
     });

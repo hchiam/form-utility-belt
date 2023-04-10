@@ -15,16 +15,16 @@ export const defaultData = {
   showProgressBar: false,
 };
 
-export function getData(callback) {
-  chrome.storage.local.get("data", (storageData) => {
+export async function getData(callback) {
+  return await chrome.storage.local.get("data", (storageData) => {
     let updatedData = { ...defaultData };
     if (storageData && storageData.data) updatedData = storageData.data;
     if (callback) callback(updatedData);
   });
 }
 
-export function setData(data, callback) {
-  chrome.storage.local.set({ data: data }).then(() => {
+export async function setData(data, callback) {
+  return await chrome.storage.local.set({ data: data }).then(() => {
     if (callback) callback();
   });
 }
@@ -65,10 +65,9 @@ export function getComboNumberFromValues(currentValues, allAllowedValues) {
     const allowedValuesForSlot = allAllowedValues[i];
     const value = currentValues[i];
     const valueIndex = allowedValuesForSlot.indexOf(value);
-    comboNumber += valueIndex * multiplier;
+    comboNumber += valueIndex > -1 ? valueIndex * multiplier : 0;
     multiplier *= allowedValuesForSlot.length;
   }
-
   return comboNumber;
 }
 
