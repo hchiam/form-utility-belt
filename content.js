@@ -134,7 +134,7 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
     function convertActionToCode(action, element, recordIndex) {
       let type = action.selector?.match(/\[type="(.+)"\]/) || "";
       if (type) {
-        type = type[0];
+        type = type[1];
       } else {
         type = element.type;
       }
@@ -143,11 +143,13 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       const nth = action.index ? `[${action.index}]` : "[0]";
       const value =
         typeof action.value === "string"
-          ? action.value.replace(/`/g, "\\`")
+          ? "`" + action.value.replace(/`/g, "\\`") + "`"
           : action.value;
+      const handleRadioOrCheckbox =
+        setValue === "checked" ? `if(e${recordIndex}.checked!==${value})` : "";
       return `await sleep();
 var e${recordIndex}=$$('${selector}')${nth};
-e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex})e${recordIndex}.${setValue}=\`${value}\`;e${recordIndex}?.dispatchEvent?.(new Event('change'));`;
+${handleRadioOrCheckbox}e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex})e${recordIndex}.${setValue}=${value};e${recordIndex}?.dispatchEvent?.(new Event('change'));`;
     }
   }
 
@@ -343,8 +345,12 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
 
         const safeToClickOrChange =
           !input.type || (input.type !== "file" && input.type !== "color");
+        const safeToToggle =
+          (input?.type !== "checkbox" && input?.type !== "radio") ||
+          ((input?.type === "checkbox" || input?.type === "radio") &&
+            !input.checked);
 
-        if (safeToClickOrChange) input?.click?.();
+        if (safeToClickOrChange && safeToToggle) input?.click?.();
         input[dotValueForType(input.type)] = lastAllowedValue;
         if (safeToClickOrChange) input.dispatchEvent?.(new Event("change"));
 
@@ -401,8 +407,12 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
 
           const safeToClickOrChange =
             !input.type || (input.type !== "file" && input.type !== "color");
+          const safeToToggle =
+            (input?.type !== "checkbox" && input?.type !== "radio") ||
+            ((input?.type === "checkbox" || input?.type === "radio") &&
+              !input.checked);
 
-          if (safeToClickOrChange) input?.click?.();
+          if (safeToClickOrChange && safeToToggle) input?.click?.();
           input[dotValueForType(input.type)] = value;
           if (safeToClickOrChange) input.dispatchEvent?.(new Event("change"));
 
