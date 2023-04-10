@@ -3,7 +3,8 @@
     "test": "node shared.test.js",
     "prepare": "husky install",
     "demo": "cd demo; yarn; open http://localhost:5173; yarn dev;",
-    "surge": "cd demo; yarn build; surge dist https://form-utility-belt-demo.surge.sh/; open https://form-utility-belt-demo.surge.sh/;"
+    "surge": "cd demo; yarn build; surge dist https://form-utility-belt-demo.surge.sh/; open https://form-utility-belt-demo.surge.sh/;",
+    "zip": "bash zip.sh"
   },
   "type": "module",
   "devDependencies": {
