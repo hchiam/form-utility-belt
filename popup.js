@@ -168,6 +168,8 @@ Do you still want to continue?`);
       hostnamesElement.value = data.hostnames.join(",") || defaultHostnames;
       submitSelectorElement.value =
         data.submit_selector || defaultSubmitSelector;
+      isRequiredSelectorElement.value =
+        data.is_required_selector || defaultIsRequiredSelector;
       if (data.continueAutomation) {
         combosElement.innerText = "PAUSE trying all combinations";
         combosElement.classList.add("on");
