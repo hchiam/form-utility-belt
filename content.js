@@ -157,7 +157,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     const thisSelector =
       (tagName ? tagName : "") +
       (element.getAttribute("id") ? "#" + element.getAttribute("id") : "") +
-      (element.getAttribute("class")
+      (element.getAttribute("class").trim()
         ? "." + element.getAttribute("class").trim().split(" ").join(".")
         : "") +
       (element.tagName === "INPUT" && element.type
