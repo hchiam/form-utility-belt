@@ -157,7 +157,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     const thisSelector =
       (tagName ? tagName : "") +
       (element.getAttribute("id") ? "#" + element.getAttribute("id") : "") +
-      (element.getAttribute("class").trim()
+      (element.getAttribute("class")?.trim()
         ? "." + element.getAttribute("class").trim().split(" ").join(".")
         : "") +
       (element.tagName === "INPUT" && element.type
@@ -493,9 +493,9 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
     let allowedValues = [];
     if (formInputElement.tagName === "SELECT") {
       // Note: you apparently can't use styles to hide options in Safari/iOS
-      allowedValues = [...formInputElement.querySelectorAll("option")].map(
-        (x) => x.value
-      );
+      allowedValues = [...formInputElement.querySelectorAll("option")]
+        .map((x) => x.value)
+        .reverse();
       const uniqueValues = [...new Set(allowedValues)];
       allowedValues = uniqueValues;
     } else if (formInputElement.tagName === "INPUT") {
@@ -536,9 +536,9 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
 
   function getFallbackValues(formInputElement) {
     if (formInputElement.tagName === "TEXTAREA") {
-      return ["", "test"];
+      return ["test", ""];
     } else if (formInputElement.tagName !== "INPUT") {
-      return ["", "test"];
+      return ["test", ""];
     }
     const now = new Date();
     const year = now.getFullYear();
@@ -551,41 +551,41 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
         return [now]; // '' isn't allowed for date
       case "datetime-local":
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        return ["", now.toISOString().slice(0, 16)];
+        return [now.toISOString().slice(0, 16), ""];
       case "email":
-        return ["", "test@test.com"];
+        return ["test@test.com", ""];
       case "file":
         return ["" /*, "C:\\fakepath\\test.txt"*/]; // not allowed to programmatically set non-empty file path
       case "month":
         const month = String(now.getMonth()).padStart(2, "0");
-        return ["", `${year}-${month}`];
+        return [`${year}-${month}`, ""];
       case "number":
-        return ["", 1];
+        return [1, ""];
       case "password":
-        return ["", "password"];
+        return ["password", ""];
       case "radio":
         return [false, true];
       case "range":
         return [1];
       case "search":
-        return ["", "test"];
+        return ["test", ""];
       case "submit":
         return [""];
       case "tel":
-        return ["", "2345678901"];
+        return ["2345678901", ""];
       case "text":
-        return ["", "test"];
+        return ["test", ""];
       case "time":
-        return ["", now.toISOString().substring(11, 16)];
+        return [now.toISOString().substring(11, 16), ""];
       case "url":
-        return ["", "https://example.com"];
+        return ["https://example.com", ""];
       case "week":
         const yearStartDate = new Date(year, 0, 1);
         const days = Math.floor((now - yearStartDate) / (24 * 60 * 60 * 1000));
         const week = Math.ceil(days / 7);
-        return ["", `${year}-W${week}`];
+        return [`${year}-W${week}`, ""];
       default:
-        return ["", "test"];
+        return ["test", ""];
     }
   }
 
@@ -593,7 +593,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
   function getUniqueValuesForRepeatSubmit(inputElement, defaultValues) {
     const valuesArray = [...defaultValues];
     if (inputElement.tagName === "TEXTAREA") {
-      return ["", `test${data.comboAt}`];
+      return [`test${data.comboAt}`, ""];
     } else if (inputElement.tagName !== "INPUT") {
       return valuesArray;
     }
@@ -604,7 +604,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       case "datetime-local":
         return valuesArray;
       case "email":
-        return ["", `test${data.comboAt}@test.com`];
+        return [`test${data.comboAt}@test.com`, ""];
       case "file":
       case "month":
       case "number":
@@ -616,7 +616,7 @@ e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex
       case "tel":
         return valuesArray;
       case "text":
-        return ["", `test${data.comboAt}`];
+        return [`test${data.comboAt}`, ""];
       case "time":
       case "url":
       case "week":
