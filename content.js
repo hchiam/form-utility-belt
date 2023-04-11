@@ -461,9 +461,13 @@ ${handleRadioOrCheckbox}e${recordIndex}?.click?.();if(e${recordIndex} && "${setV
       data.is_required_selector || defaultIsRequiredSelector;
     const isRequired = [...$$(`${isRequiredSelector}:not([type="submit"])`)];
     const visible = isRequired.filter((e) => isVisible(e));
-    const filled = isRequired.filter(
-      (e) => e.value || e.checked || e.valueAsDate
-    );
+    const filled = isRequired.filter((e) => {
+      if (e?.type && (e.type === "checkbox" || e.type === "radio") && e.name) {
+        return [...$$(`[name="${e.name}"]`)].some(x=>x.checked);
+      } else {
+        return e.value || e.checked || e.valueAsDate;
+      }
+    });
     return visible.length === filled.length;
   }
 

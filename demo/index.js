@@ -15,12 +15,15 @@ select?.addEventListener("change", () => {
 });
 
 submit?.addEventListener("click", (e) => {
-  // TODO: check .isRequired for checkbox/radio
   const isRequired = [...$$('.isRequired:not([type="submit"])')];
   const visible = isRequired.filter((e) => isVisible(e));
-  const filled = isRequired.filter(
-    (e) => e.value || e.checked || e.valueAsDate
-  );
+  const filled = isRequired.filter((e) => {
+    if (e?.type && (e.type === "checkbox" || e.type === "radio") && e.name) {
+      return [...$$(`[name="${e.name}"]`)].some((x) => x.checked);
+    } else {
+      return e.value || e.checked || e.valueAsDate;
+    }
+  });
   if (visible.length !== filled.length) {
     e.preventDefault();
     alert("not all visible required are filled");
