@@ -87,6 +87,8 @@ Do you still want to continue?`
         if (data.continueAutomation) {
           combosElement.innerText = "PAUSE trying all combinations";
           combosElement.classList.add("on");
+          submitCombosElement.disabled = true;
+          submitCombosLabelElement.setAttribute("disabled", true);
           data.showProgressBar = true;
           shared.setData(data, () => {
             combos();
@@ -199,6 +201,10 @@ Do you still want to continue?`);
     submitCombosLabelElement.setAttribute("disabled", disable);
     recordElement.disabled = disable;
     summaryElement.disabled = disable;
+    if (data.continueAutomation) {
+      submitCombosElement.disabled = true;
+      submitCombosLabelElement.setAttribute("disabled", true);
+    }
   }
 
   function getHostnamesFromUrlListString(urlString) {
