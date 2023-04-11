@@ -18,7 +18,7 @@ submit?.addEventListener("click", (e) => {
   const isRequired = [...$$('.isRequired:not([type="submit"])')];
   const visible = isRequired.filter((e) => isVisible(e));
   const filled = isRequired.filter((e) => {
-    if (e?.type && (e.type === "checkbox" || e.type === "radio") && e.name) {
+    if (e?.type && e.type === "radio" && e.name) {
       return [...$$(`[name="${e.name}"]`)].some((x) => x.checked);
     } else {
       return e.value || e.checked || e.valueAsDate;
