@@ -52,6 +52,7 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
   }
 
   function reinitializeRecord() {
+    // TODO: avoid this when running combos
     data.record = iifeStart + recordPrefix + iifeEnd;
     data.recordIndex = 0;
     data.summary = "";
@@ -380,7 +381,7 @@ ${handleRadioOrCheckbox}e${recordIndex}?.click?.();if(e${recordIndex} && "${setV
 
       const canRecurse = indexOfCurrentInput + 1 < allInputs.length;
 
-      if (canRecurse) {
+      if (canRecurse && data.continueAutomation) {
         // even if current input isn't visible try all the values of the next input:
         await recursivelyTryCombos(
           allInputs,

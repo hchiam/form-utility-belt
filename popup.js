@@ -89,13 +89,14 @@ Do you still want to continue?`
             combos();
           });
         } else {
+          stopCombos(() => {
+            alert("PAUSING trying all combinations.");
+            shared.setData(data);
+          });
           combosElement.innerText = "Try all combinations";
           combosElement.classList.remove("on");
           submitCombosElement.disabled = false;
           submitCombosLabelElement.setAttribute("disabled", false);
-          shared.setData(data, () => {
-            stopCombos();
-          });
         }
         shared.beep();
       }
@@ -223,7 +224,7 @@ Do you still want to continue?`);
     });
   }
 
-  function stopCombos() {
+  function stopCombos(callback) {
     stopProgressBar();
     chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
       const activeTab = tabData[0];
@@ -232,6 +233,7 @@ Do you still want to continue?`);
           message: "stop-combos",
         })
         .then(() => {
+          if (callback) callback();
           window.close();
         });
     });
