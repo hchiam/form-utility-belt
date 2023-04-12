@@ -26,10 +26,8 @@
 
   initializeData();
   initializeEventsInsidePopupUI();
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
-    const tabHostnames = getHostnamesFromUrlListString(tabData[0].url);
-    enableBasedOnHostnames(tabHostnames);
-  });
+  enablePopupInputsBasedOnHostnames();
+  setInterval(enablePopupInputsBasedOnHostnames, 1000);
 
   function initializeEventsInsidePopupUI() {
     hostnamesElement.addEventListener("keyup", () => {
@@ -39,10 +37,7 @@
       data.hostnames = hostnames;
       hostnamesElement.value = hostnames.join(",");
       shared.setData(data);
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
-        const tabHostnames = getHostnamesFromUrlListString(tabData[0].url);
-        enableBasedOnHostnames(tabHostnames);
-      });
+      enablePopupInputsBasedOnHostnames();
     });
     hostnamesElement.addEventListener("change", () => {
       alert(
@@ -193,20 +188,22 @@ Do you still want to continue?`);
     });
   }
 
-  /** param hostnames must be an array */
-  function enableBasedOnHostnames(hostnames) {
-    const disable = !shared.isAllowedHostname(hostnames, data.hostnames);
-    submitSelectorElement.disabled = disable;
-    isRequiredSelectorElement.disabled = disable;
-    combosElement.disabled = disable;
-    submitCombosElement.disabled = disable;
-    submitCombosLabelElement.setAttribute("disabled", disable);
-    recordElement.disabled = disable;
-    summaryElement.disabled = disable;
-    if (data.continueAutomation) {
-      submitCombosElement.disabled = true;
-      submitCombosLabelElement.setAttribute("disabled", true);
-    }
+  function enablePopupInputsBasedOnHostnames() {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
+      const tabHostnames = getHostnamesFromUrlListString(tabData[0].url);
+      const disable = !shared.isAllowedHostname(tabHostnames, data.hostnames);
+      submitSelectorElement.disabled = disable;
+      isRequiredSelectorElement.disabled = disable;
+      combosElement.disabled = disable;
+      submitCombosElement.disabled = disable;
+      submitCombosLabelElement.setAttribute("disabled", disable);
+      recordElement.disabled = disable;
+      summaryElement.disabled = disable;
+      if (data.continueAutomation) {
+        submitCombosElement.disabled = true;
+        submitCombosLabelElement.setAttribute("disabled", true);
+      }
+    });
   }
 
   function getHostnamesFromUrlListString(urlString) {
