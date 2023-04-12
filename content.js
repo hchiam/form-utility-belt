@@ -52,7 +52,6 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
   }
 
   function reinitializeRecord(event) {
-    // TODO: avoid this when running combos
     const isUserGenerated = event.isTrusted;
     if (!isUserGenerated) return;
 
@@ -363,12 +362,10 @@ ${varE}${triggerClick}${setValue}${triggerChange}`;
 
         const safeToClickOrChange =
           !input.type || (input.type !== "file" && input.type !== "color");
-        const safeToToggle =
-          (input?.type !== "checkbox" && input?.type !== "radio") ||
-          ((input?.type === "checkbox" || input?.type === "radio") &&
-            !input.checked);
+        const safeToClick =
+          input?.type !== "checkbox" && input?.type !== "radio";
 
-        if (safeToClickOrChange && safeToToggle) input?.click?.();
+        if (safeToClickOrChange && safeToClick) input?.click?.();
         input[dotValueForType(input.type)] = lastAllowedValue;
         if (safeToClickOrChange) input.dispatchEvent?.(new Event("change"));
 
@@ -425,12 +422,10 @@ ${varE}${triggerClick}${setValue}${triggerChange}`;
 
           const safeToClickOrChange =
             !input.type || (input.type !== "file" && input.type !== "color");
-          const safeToToggle =
-            (input?.type !== "checkbox" && input?.type !== "radio") ||
-            ((input?.type === "checkbox" || input?.type === "radio") &&
-              !input.checked);
+          const safeToClick =
+            input?.type !== "checkbox" && input?.type !== "radio";
 
-          if (safeToClickOrChange && safeToToggle) input?.click?.();
+          if (safeToClickOrChange && safeToClick) input?.click?.();
           input[dotValueForType(input.type)] = value;
           if (safeToClickOrChange) input.dispatchEvent?.(new Event("change"));
 
