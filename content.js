@@ -69,7 +69,7 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
 
     function handleChangesInAnyElement(event) {
       const isUserGenerated = event.isTrusted;
-      if (!isUserGenerated) return;
+      if (!isUserGenerated || data.continueAutomation) return;
 
       const wasTriggeredOnThisElement = event.target === this;
       if (!wasTriggeredOnThisElement) return;
@@ -111,7 +111,7 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       data.record = iifeStart + data.record + iifeEnd;
       data.summary += actionSummary;
       shared.setData(data);
-      if (!data.continueAutomation) log(actionSummary);
+      log(actionSummary);
     }
 
     function getActiveOneOnly(selector, element) {
