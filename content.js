@@ -234,8 +234,8 @@ ${handleRadioOrCheckbox}e${recordIndex}?.click?.();if(e${recordIndex} && "${setV
     } else if (data.comboAt < 0 || data.comboAt >= data.comboCount) {
       stopAutomation();
     } else {
-      log("COMBOS: Continuing automation in 3 seconds.");
-      await sleep(3000);
+      log("COMBOS: Continuing automation in 10 seconds.");
+      await sleep(10_000);
 
       const allInputs = getAllInputs();
       const allAllowedValues = getAllAllowedValuesOfAllInputs(allInputs);
