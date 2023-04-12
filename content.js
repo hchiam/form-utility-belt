@@ -51,8 +51,11 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
     );
   }
 
-  function reinitializeRecord() {
+  function reinitializeRecord(event) {
     // TODO: avoid this when running combos
+    const isUserGenerated = event.isTrusted;
+    if (!isUserGenerated) return;
+
     data.record = iifeStart + recordPrefix + iifeEnd;
     data.recordIndex = 0;
     data.summary = "";
@@ -140,18 +143,31 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       } else {
         type = element.type;
       }
-      const setValue = dotValueForType(type) || "value";
+      const dotValue = dotValueForType(type) || "value";
       const selector = action.selector;
       const nth = action.index ? `[${action.index}]` : "[0]";
       const value =
         typeof action.value === "string"
           ? "`" + action.value.replace(/`/g, "\\`") + "`"
           : action.value;
-      const handleRadioOrCheckbox =
-        setValue === "checked" ? `if(e${recordIndex}.checked!==${value})` : "";
-      return `await sleep();
-var e${recordIndex}=$$('${selector}')${nth};
-${handleRadioOrCheckbox}e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex})e${recordIndex}.${setValue}=${value};e${recordIndex}?.dispatchEvent?.(new Event('change'));`;
+
+      const isRadioOrCheckbox = dotValue === "checked";
+
+      const varE = `var e${recordIndex}=$$('${selector}')${nth};`;
+      const triggerClick = isRadioOrCheckbox
+        ? ""
+        : `e${recordIndex}?.click?.();`;
+      const setValue = `if(e${recordIndex} && "${dotValue}" in e${recordIndex})e${recordIndex}.${dotValue}=${value};`;
+      const triggerChange = `e${recordIndex}?.dispatchEvent?.(new Event("change"));`;
+
+      if (isRadioOrCheckbox) {
+        // don't run .click() on checkboxes/radios because that makes Event.isTrusted = true
+        return `await sleep();
+${varE}${setValue}${triggerChange}`;
+      } else {
+        return `await sleep();
+${varE}${triggerClick}${setValue}${triggerChange}`;
+      }
     }
   }
 
