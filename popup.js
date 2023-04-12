@@ -96,6 +96,8 @@ Do you still want to continue?`
         } else {
           combosElement.innerText = "Try all combinations";
           combosElement.classList.remove("on");
+          submitCombosElement.disabled = false;
+          submitCombosLabelElement.setAttribute("disabled", false);
           shared.setData(data, () => {
             stopCombos();
           });
