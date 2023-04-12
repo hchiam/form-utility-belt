@@ -440,7 +440,7 @@ ${handleRadioOrCheckbox}e${recordIndex}?.click?.();if(e${recordIndex} && "${setV
       // resetAllInputs();
     } else if (!areAllVisibleRequiredFilled()) {
       log(
-        `COMBO ${data.comboAt}/${data.comboCount}: ❌ Can hit submit (${data.submit_selector}), BUT not all the required fields (${data.is_required_selector}) that are visible are filled.`,
+        `COMBO ${data.comboAt}/${data.comboCount}: ❌ Can hit submit (${data.submit_selector}), BUT not all the required fields (${data.is_required_selector}) that are visible are filled/valid.`,
         allInputs.map((element) => element[dotValueForType(element.type)])
       );
       // resetAllInputs();
