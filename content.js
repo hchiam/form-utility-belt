@@ -408,17 +408,54 @@ ${varE}${triggerClick}${setValue}${triggerChange}`;
 
         // now set the current combo's values of all visible inputs:
         for (let i = 0; i < allInputs.length; i++) {
-          const input = allInputs[i];
+          let input = allInputs[i];
+
+          const vals = allAllowedValues[indexOfCurrentInput];
+          const isRadioGroupValue =
+            typeof vals === "object" && !isNaN(vals[v].index);
+
+          const uncheckAllRadiosInGroup =
+            isRadioGroupValue && vals[v].index === -1;
+          if (uncheckAllRadiosInGroup) {
+            const allRadiosInGroup = $$(
+              `input[type="radio"][name="${vals[v].name}"]`
+            );
+            allRadiosInGroup.forEach((input) => {
+              const isInputCurrentlyVisible = isVisible(input);
+              if (isInputCurrentlyVisible) {
+                input.checked = false;
+                input.dispatchEvent?.(new Event("change"));
+              }
+            });
+
+            await sleep(10);
+
+            // all blank radios in group
+
+            continue;
+          }
+
+          if (isRadioGroupValue) {
+            // get the correct radio input before checking if it isVisible:
+            input = $$(`input[type="radio"][name="${vals[v].name}"]`)[
+              vals[v].index
+            ];
+            // just one radio
+          }
 
           const isInputCurrentlyVisible = isVisible(input);
           if (!isInputCurrentlyVisible) continue;
 
           const indexOfValueToUseForInput = comboValuesIndices[i];
 
-          const value = getUniqueValuesForRepeatSubmit(
+          let value = getUniqueValuesForRepeatSubmit(
             input,
             allAllowedValues[i]
           )[indexOfValueToUseForInput];
+
+          if (isRadioGroupValue) {
+            value = true; // since we're not unchecking all in group
+          }
 
           const safeToClickOrChange =
             !input.type || (input.type !== "file" && input.type !== "color");
@@ -441,31 +478,46 @@ ${varE}${triggerClick}${setValue}${triggerChange}`;
     if (!isVisible($(data.submit_selector))) {
       log(
         `COMBO ${data.comboAt}/${data.comboCount}: ❌ Submit input isn't visible: ${data.submit_selector}`,
-        allInputs.map((element) => element[dotValueForType(element.type)])
+        getCurrentInputValues(allInputs)
       );
       // resetAllInputs();
     } else if ($(data.submit_selector).disabled) {
       log(
         `COMBO ${data.comboAt}/${data.comboCount}: ❌ Submit input is disabled: ${data.submit_selector}`,
-        allInputs.map((element) => element[dotValueForType(element.type)])
+        getCurrentInputValues(allInputs)
       );
       // resetAllInputs();
     } else if (!areAllVisibleRequiredFilled()) {
       log(
         `COMBO ${data.comboAt}/${data.comboCount}: ❌ Can hit submit (${data.submit_selector}), BUT not all the required fields (${data.is_required_selector}) that are visible are filled/valid.`,
-        allInputs.map((element) => element[dotValueForType(element.type)])
+        getCurrentInputValues(allInputs)
       );
       // resetAllInputs();
     } else {
       log(
         `COMBO ${data.comboAt}/${data.comboCount}: ✅ Can hit submit: ${data.submit_selector}`,
-        allInputs.map((element) => element[dotValueForType(element.type)])
+        getCurrentInputValues(allInputs)
       );
       if (data.submit_combos) {
         $(data.submit_selector).click();
       }
       // resetAllInputs();
     }
+  }
+
+  function getCurrentInputValues(allInputs) {
+    return allInputs.map((element) => {
+      const isRadioGroup =
+        element.tagName === "INPUT" && element.type === "radio" && element.name;
+      if (isRadioGroup) {
+        const indexOfCheckedRadio = [
+          ...$$(`input[type="radio"][name="${element.name}"]`),
+        ].findIndex((x) => x.checked); // returns -1 if all radios in group are unchecked
+        return indexOfCheckedRadio;
+      } else {
+        return element[dotValueForType(element.type)];
+      }
+    });
   }
 
   function areAllVisibleRequiredFilled() {
@@ -484,12 +536,38 @@ ${varE}${triggerClick}${setValue}${triggerChange}`;
   }
 
   function getAllInputs() {
+    const submitInputElements = [
+      ...$$(data.submit_selector || defaultSubmitSelector),
+    ];
+
     const possibleFormInputs = `input:not([type="submit"]):not([type="hidden"]), select, textarea`; // not button?
-    const submitInputElements = $$(
-      data.submit_selector || defaultSubmitSelector
-    );
-    return [...$$(possibleFormInputs)].filter((element) => {
-      const isNotSubmitInput = [...submitInputElements].every(
+    let inputElements = [...$$(possibleFormInputs)];
+
+    const radioGroupNames = {};
+
+    inputElements
+      .filter((e) => e.type === "radio" && e.name)
+      .forEach((e, i) => {
+        if (!(e.name in radioGroupNames)) {
+          radioGroupNames[e.name] = i; // first index found at
+        }
+      });
+
+    inputElements = inputElements.filter((e, i) => {
+      const isRadio = e.type === "radio";
+      if (!isRadio) return true;
+
+      const hasGroupName = e.name in radioGroupNames;
+      if (hasGroupName) {
+        const firstIndexFoundAt = radioGroupNames[e.name];
+        return i === firstIndexFoundAt;
+      }
+
+      return true;
+    });
+
+    return [...inputElements].filter((element) => {
+      const isNotSubmitInput = submitInputElements.every(
         (submitElement) => submitElement !== element
       );
       return /*isVisible(element) &&*/ isNotSubmitInput;
@@ -542,6 +620,21 @@ ${varE}${triggerClick}${setValue}${triggerChange}`;
         .reverse();
       const uniqueValues = [...new Set(allowedValues)];
       allowedValues = uniqueValues;
+    } else if (
+      formInputElement.tagName === "INPUT" &&
+      formInputElement.type === "radio" &&
+      formInputElement.name
+    ) {
+      allowedValues = [...$$(`input[name="${formInputElement.name}"]`)].map(
+        (r, i) => {
+          if (r.value && r.value !== "on") {
+            return r.value;
+          } else {
+            return { index: i, name: formInputElement.name, text: r.innerText };
+          }
+        }
+      );
+      allowedValues.push({ index: -1, name: formInputElement.name, text: "" }); // case of all empty
     } else if (formInputElement.tagName === "INPUT") {
       const datalistValues = getDatalist(formInputElement);
       allowedValues.push(...datalistValues);
