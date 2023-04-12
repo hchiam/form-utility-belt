@@ -51,7 +51,11 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
     );
   }
 
-  function reinitializeRecord() {
+  function reinitializeRecord(event) {
+    // TODO: avoid this when running combos
+    const isUserGenerated = event.isTrusted;
+    if (!isUserGenerated) return;
+
     data.record = iifeStart + recordPrefix + iifeEnd;
     data.recordIndex = 0;
     data.summary = "";
@@ -69,7 +73,7 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
 
     function handleChangesInAnyElement(event) {
       const isUserGenerated = event.isTrusted;
-      if (!isUserGenerated) return;
+      if (!isUserGenerated || data.continueAutomation) return;
 
       const wasTriggeredOnThisElement = event.target === this;
       if (!wasTriggeredOnThisElement) return;
@@ -111,7 +115,7 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       data.record = iifeStart + data.record + iifeEnd;
       data.summary += actionSummary;
       shared.setData(data);
-      if (!data.continueAutomation) log(actionSummary);
+      log(actionSummary);
     }
 
     function getActiveOneOnly(selector, element) {
@@ -139,18 +143,31 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       } else {
         type = element.type;
       }
-      const setValue = dotValueForType(type) || "value";
+      const dotValue = dotValueForType(type) || "value";
       const selector = action.selector;
       const nth = action.index ? `[${action.index}]` : "[0]";
       const value =
         typeof action.value === "string"
           ? "`" + action.value.replace(/`/g, "\\`") + "`"
           : action.value;
-      const handleRadioOrCheckbox =
-        setValue === "checked" ? `if(e${recordIndex}.checked!==${value})` : "";
-      return `await sleep();
-var e${recordIndex}=$$('${selector}')${nth};
-${handleRadioOrCheckbox}e${recordIndex}?.click?.();if(e${recordIndex} && "${setValue}" in e${recordIndex})e${recordIndex}.${setValue}=${value};e${recordIndex}?.dispatchEvent?.(new Event('change'));`;
+
+      const isRadioOrCheckbox = dotValue === "checked";
+
+      const varE = `var e${recordIndex}=$$('${selector}')${nth};`;
+      const triggerClick = isRadioOrCheckbox
+        ? ""
+        : `e${recordIndex}?.click?.();`;
+      const setValue = `if(e${recordIndex} && "${dotValue}" in e${recordIndex})e${recordIndex}.${dotValue}=${value};`;
+      const triggerChange = `e${recordIndex}?.dispatchEvent?.(new Event("change"));`;
+
+      if (isRadioOrCheckbox) {
+        // don't run .click() on checkboxes/radios because that makes Event.isTrusted = true
+        return `await sleep();
+${varE}${setValue}${triggerChange}`;
+      } else {
+        return `await sleep();
+${varE}${triggerClick}${setValue}${triggerChange}`;
+      }
     }
   }
 
@@ -234,8 +251,8 @@ ${handleRadioOrCheckbox}e${recordIndex}?.click?.();if(e${recordIndex} && "${setV
     } else if (data.comboAt < 0 || data.comboAt >= data.comboCount) {
       stopAutomation();
     } else {
-      log("COMBOS: Continuing automation in 3 seconds.");
-      await sleep(3000);
+      log("COMBOS: Continuing automation in 10 seconds.");
+      await sleep(10_000);
 
       const allInputs = getAllInputs();
       const allAllowedValues = getAllAllowedValuesOfAllInputs(allInputs);
@@ -380,7 +397,7 @@ ${handleRadioOrCheckbox}e${recordIndex}?.click?.();if(e${recordIndex} && "${setV
 
       const canRecurse = indexOfCurrentInput + 1 < allInputs.length;
 
-      if (canRecurse) {
+      if (canRecurse && data.continueAutomation) {
         // even if current input isn't visible try all the values of the next input:
         await recursivelyTryCombos(
           allInputs,
@@ -440,7 +457,7 @@ ${handleRadioOrCheckbox}e${recordIndex}?.click?.();if(e${recordIndex} && "${setV
       // resetAllInputs();
     } else if (!areAllVisibleRequiredFilled()) {
       log(
-        `COMBO ${data.comboAt}/${data.comboCount}: ❌ Can hit submit (${data.submit_selector}), BUT not all the required fields (${data.is_required_selector}) that are visible are filled.`,
+        `COMBO ${data.comboAt}/${data.comboCount}: ❌ Can hit submit (${data.submit_selector}), BUT not all the required fields (${data.is_required_selector}) that are visible are filled/valid.`,
         allInputs.map((element) => element[dotValueForType(element.type)])
       );
       // resetAllInputs();

@@ -26,7 +26,7 @@ submit?.addEventListener("click", (e) => {
   });
   if (visible.length !== filled.length) {
     e.preventDefault();
-    alert("not all visible required are filled");
+    alert("not all visible required are filled/valid.");
   }
 });
 
