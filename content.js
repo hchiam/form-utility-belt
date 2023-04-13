@@ -548,13 +548,11 @@ ${varE}${triggerClick}${setValue}${triggerChange}`;
 
     const radioGroupNames = {};
 
-    inputElements
-      .filter((e) => e.type === "radio" && e.name)
-      .forEach((e, i) => {
-        if (!(e.name in radioGroupNames)) {
-          radioGroupNames[e.name] = i; // first index found at
-        }
-      });
+    inputElements.forEach((e, i) => {
+      if (e.type === "radio" && e.name && !(e.name in radioGroupNames)) {
+        radioGroupNames[e.name] = i; // first index found at
+      }
+    });
 
     inputElements = inputElements.filter((e, i) => {
       const isRadio = e.type === "radio";
