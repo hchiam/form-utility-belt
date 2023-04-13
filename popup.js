@@ -24,11 +24,11 @@
   );
   const recordElement = document.querySelector("#record");
   const summaryElement = document.querySelector("#summary");
-  const allButtonsAndInputs = document.querySelectorAll("button,input");
 
   initializeData();
   initializeEventsInsidePopupUI();
   enablePopupInputsBasedOnHostnames();
+  setInterval(enablePopupInputsBasedOnHostnames, 1000);
 
   function initializeEventsInsidePopupUI() {
     hostnamesElement.addEventListener("keyup", () => {
@@ -44,6 +44,12 @@
       alert(
         "Manually refresh the page to let the Form Utility Belt start recording steps."
       );
+    });
+    hostnamesElement.addEventListener("mouseover", () => {
+      getHostnameElement.classList.add("show");
+    });
+    hostnamesElement.addEventListener("focus", () => {
+      getHostnameElement.classList.add("show");
     });
     getHostnameElement.addEventListener("click", () => {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
@@ -111,6 +117,12 @@ Do you still want to continue?`
         shared.beep();
       }
     });
+    combosElement.addEventListener("mouseover", () => {
+      submitCombosLabelElement.classList.add("show");
+    });
+    combosElement.addEventListener("focus", () => {
+      submitCombosLabelElement.classList.add("show");
+    });
     submitCombosElement.addEventListener("change", () => {
       let yes = true;
       if (submitCombosElement.checked) {
@@ -170,14 +182,6 @@ Do you still want to continue?`);
         });
       }
     });
-    [...allButtonsAndInputs].forEach((e) => {
-      e.addEventListener("hover", () => {
-        enablePopupInputsBasedOnHostnames();
-      });
-      e.addEventListener("focus", () => {
-        enablePopupInputsBasedOnHostnames();
-      });
-    });
   }
 
   function initializeData(callback) {
@@ -196,6 +200,9 @@ Do you still want to continue?`);
         combosElement.classList.remove("on");
       }
       submitCombosElement.checked = data.submit_combos;
+      if (submitCombosElement.checked) {
+        submitCombosLabelElement.classList.add("show");
+      }
       stopProgressBar();
       if (data.showProgressBar) {
         updateProgressBar();
