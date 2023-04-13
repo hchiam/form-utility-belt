@@ -644,8 +644,8 @@ ${varE}${triggerClick}${setValue}${triggerChange}`;
       (!formInputElement.type ||
         formInputElement.type === "text" ||
         formInputElement.type === "textarea") &&
-      !!formInputElement.value &&
-      !String(formInputElement.value).startsWith("test")
+      formInputElement.value &&
+      !/test\d*/.test(String(formInputElement.value))
     ) {
       // use input value set in the form as the only allowed value:
       allowedValues = [formInputElement.value];
