@@ -645,7 +645,7 @@ ${triggerClick}${setValue}${triggerChange}`;
         formInputElement.type === "text" ||
         formInputElement.type === "textarea") &&
       formInputElement.value &&
-      !/test\d*/.test(String(formInputElement.value))
+      !/^test\d*?$/.test(String(formInputElement.value))
     ) {
       // use input value manually set in the form as the only allowed value:
       allowedValues = [formInputElement.value];
@@ -745,7 +745,7 @@ ${triggerClick}${setValue}${triggerChange}`;
     const valuesArray = [...defaultValues];
     if (inputElement.tagName === "TEXTAREA") {
       const useManualValue =
-        defaultValues.length && !/test\d*/.test(String(defaultValues[0]));
+        defaultValues.length && !/^test\d*?$/.test(String(defaultValues[0]));
       return useManualValue ? defaultValues : [`test${data.comboAt}`, ""];
     } else if (inputElement.tagName !== "INPUT") {
       return valuesArray;
@@ -770,7 +770,7 @@ ${triggerClick}${setValue}${triggerChange}`;
         return valuesArray;
       case "text":
         const useManualValue =
-          defaultValues.length && !/test\d*/.test(String(defaultValues[0]));
+          defaultValues.length && !/^test\d*?$/.test(String(defaultValues[0]));
         return useManualValue ? defaultValues : [`test${data.comboAt}`, ""];
       case "time":
       case "url":
