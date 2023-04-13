@@ -638,9 +638,20 @@ ${varE}${triggerClick}${setValue}${triggerChange}`;
         }
       );
       allowedValues.push({ index: -1, name: formInputElement.name, text: "" }); // case of all empty
+    } else if (
+      (formInputElement.tagName === "INPUT" ||
+        formInputElement.tagName === "TEXTAREA") &&
+      (!formInputElement.type ||
+        formInputElement.type === "text" ||
+        formInputElement.type === "textarea") &&
+      formInputElement.value &&
+      !/test\d*/.test(String(formInputElement.value))
+    ) {
+      // use input value manually set in the form as the only allowed value:
+      allowedValues = [formInputElement.value];
     } else if (formInputElement.tagName === "INPUT") {
       const datalistValues = getDatalist(formInputElement);
-      allowedValues.push(...datalistValues);
+      allowedValues = datalistValues;
     }
     return allowedValues;
   }
@@ -733,7 +744,9 @@ ${varE}${triggerClick}${setValue}${triggerChange}`;
   function getUniqueValuesForRepeatSubmit(inputElement, defaultValues) {
     const valuesArray = [...defaultValues];
     if (inputElement.tagName === "TEXTAREA") {
-      return [`test${data.comboAt}`, ""];
+      const useManualValue =
+        defaultValues.length && !/test\d*/.test(String(defaultValues[0]));
+      return useManualValue ? defaultValues : [`test${data.comboAt}`, ""];
     } else if (inputElement.tagName !== "INPUT") {
       return valuesArray;
     }
@@ -756,7 +769,9 @@ ${varE}${triggerClick}${setValue}${triggerChange}`;
       case "tel":
         return valuesArray;
       case "text":
-        return [`test${data.comboAt}`, ""];
+        const useManualValue =
+          defaultValues.length && !/test\d*/.test(String(defaultValues[0]));
+        return useManualValue ? defaultValues : [`test${data.comboAt}`, ""];
       case "time":
       case "url":
       case "week":
