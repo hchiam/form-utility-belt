@@ -41,6 +41,11 @@
       enablePopupInputsBasedOnHostnames();
     });
     hostnamesElement.addEventListener("change", () => {
+      if (hostnamesElement.value === "*") {
+        alert(
+          'WARNING: \n\nUsing hostname "*" will make Form Utility Belt record on any site. \n\nIf this is not what you want, change it to something else.'
+        );
+      }
       alert(
         "Manually refresh the page to let the Form Utility Belt start recording steps."
       );
