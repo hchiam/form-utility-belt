@@ -109,6 +109,11 @@ button:disabled,
   width: 25ch;
 }
 
+#get_hostname {
+  height: 50%;
+  margin-top: auto;
+}
+
 #record,
 #summary {
   white-space: pre;

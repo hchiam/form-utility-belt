@@ -12,6 +12,7 @@
   let data = { ...shared.defaultData };
 
   const hostnamesElement = document.querySelector("#hostnames");
+  const getHostnameElement = document.querySelector("#get_hostname");
   const submitSelectorElement = document.querySelector("#submit_selector");
   const isRequiredSelectorElement = document.querySelector(
     "#is_required_selector"
@@ -43,6 +44,15 @@
       alert(
         "Manually refresh the page to let the Form Utility Belt start recording steps."
       );
+    });
+    getHostnameElement.addEventListener("click", () => {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabData) => {
+        const tabHostnames = getHostnamesFromUrlListString(tabData[0].url);
+        data.hostnames = tabHostnames;
+        hostnamesElement.value = tabHostnames.join(",");
+        hostnamesElement.dispatchEvent(new Event("keyup")); // trigger other updates
+        shared.beep();
+      });
     });
     submitSelectorElement.addEventListener("keyup", () => {
       data.submit_selector =
