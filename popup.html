@@ -8,15 +8,18 @@
   </head>
   <body>
     <h1>Form Utility Belt</h1>
-    <label
-      ><b>Allowed &lt;hostname.com&gt;: </b><br /><i>(* = any website)</i>
-      <input
-        type="url"
-        id="hostnames"
-        value="google.com"
-        placeholder="Allowed <hostname.com>"
-        aria-label="hostnames"
-    /></label>
+    <div class="d-flex">
+      <label
+        ><b>Allowed &lt;hostname.com&gt;: </b><br /><i>(* = any website)</i>
+        <input
+          type="url"
+          id="hostnames"
+          value="google.com"
+          placeholder="Allowed <hostname.com>"
+          aria-label="hostnames"
+      /></label>
+      <button id="get_hostname">Use hostname of current page</button>
+    </div>
     <div class="d-flex">
       <label
         ><b>Submit button CSS selector: </b><br /><i>e.g., [type="submit"]</i>
