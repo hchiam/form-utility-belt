@@ -23,6 +23,7 @@
   );
   const recordElement = document.querySelector("#record");
   const summaryElement = document.querySelector("#summary");
+  const allButtonsAndInputs = document.querySelectorAll("button,input");
 
   initializeData();
   initializeEventsInsidePopupUI();
@@ -159,6 +160,14 @@ Do you still want to continue?`);
           window.close();
         });
       }
+    });
+    [...allButtonsAndInputs].forEach((e) => {
+      e.addEventListener("hover", () => {
+        enablePopupInputsBasedOnHostnames();
+      });
+      e.addEventListener("focus", () => {
+        enablePopupInputsBasedOnHostnames();
+      });
     });
   }
 
