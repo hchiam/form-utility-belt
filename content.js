@@ -647,7 +647,7 @@ ${varE}${triggerClick}${setValue}${triggerChange}`;
       formInputElement.value &&
       !/test\d*/.test(String(formInputElement.value))
     ) {
-      // use input value set in the form as the only allowed value:
+      // use input value manually set in the form as the only allowed value:
       allowedValues = [formInputElement.value];
     } else if (formInputElement.tagName === "INPUT") {
       const datalistValues = getDatalist(formInputElement);
