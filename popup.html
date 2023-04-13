@@ -10,19 +10,45 @@
     <h1>Form Utility Belt</h1>
     <div class="d-flex">
       <label
-        ><b>Allowed &lt;hostname.com&gt;: </b><br /><i>(* = any website)</i>
+        ><b>Auto-record if page hostname is: </b><br /><span
+          ><i>* = any website</i></span
+        >
         <input
           type="url"
           id="hostnames"
           value="google.com"
-          placeholder="Allowed <hostname.com>"
+          placeholder="<hostname.com>"
           aria-label="hostnames"
       /></label>
-      <button id="get_hostname">Use hostname of current page</button>
+      <button id="get_hostname" class="will-show">
+        Use hostname of current page
+      </button>
     </div>
+    <label for="summary" class="animation-trigger">
+      <b>Auto-record summary:</b><br /><span
+        ><i class="animate-in"
+          >Clears if you revisit and interact with a site with a hostname above.
+          Click to copy to clipboard.</i
+        ></span
+      >
+      <p id="summary" tabindex="0"></p>
+    </label>
+    <label for="record"
+      ><b>Auto-record JS:</b><br /><span
+        ><i
+          >Clears if you revisit and interact with a site with a hostname above.
+          Click to copy to clipboard.</i
+        ></span
+      >
+      <p id="record" tabindex="0"></p
+    ></label>
+    <hr />
+
     <div class="d-flex">
       <label
-        ><b>Submit button CSS selector: </b><br /><i>e.g., [type="submit"]</i>
+        ><b>Submit button CSS selector: </b><br /><span
+          ><i>Example: [type="submit"]</i></span
+        >
         <input
           id="submit_selector"
           type="text"
@@ -30,7 +56,9 @@
           value="[type='submit']"
       /></label>
       <label
-        ><b>Required input CSS selector: </b><br /><i>e.g., .isRequired</i>
+        ><b>Required input CSS selector: </b><br /><span
+          ><i>Example: .isRequired</i></span
+        >
         <input
           id="is_required_selector"
           type="text"
@@ -39,25 +67,10 @@
       /></label>
     </div>
     <button id="combos" class="experimental">Try all combinations</button>
-    <label id="submit_combos_label"
+    <label id="submit_combos_label" class="will-show"
       ><b>and submit per combo:</b
       ><input type="checkbox" id="submit_combos" value="false"
     /></label>
-    <hr />
-    <label for="summary">
-      <b>Summary:</b><br /><i
-        >(Clears if you revisit and interact with a site with a hostname above.
-        Click to copy to clipboard.)</i
-      >
-    </label>
-    <p id="summary" tabindex="0"></p>
-    <label for="record"
-      ><b>Recorded JS steps: </b><br /><i
-        >(Clears if you revisit and interact with a site with a hostname above.
-        Click to copy to clipboard.)</i
-      ></label
-    >
-    <p id="record" tabindex="0"></p>
     <script src="popup.js"></script>
     <link rel="stylesheet" href="popup.css" />
   </body>

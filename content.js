@@ -162,10 +162,12 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       if (isRadioOrCheckbox) {
         // don't run .click() on checkboxes/radios because that makes Event.isTrusted = true
         return `await sleep();
-${varE}${setValue}${triggerChange}`;
+${varE}
+${setValue}${triggerChange}`;
       } else {
         return `await sleep();
-${varE}${triggerClick}${setValue}${triggerChange}`;
+${varE}
+${triggerClick}${setValue}${triggerChange}`;
       }
     }
   }
