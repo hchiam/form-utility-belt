@@ -28,7 +28,6 @@
   initializeData();
   initializeEventsInsidePopupUI();
   enablePopupInputsBasedOnHostnames();
-  setTimeout(enablePopupInputsBasedOnHostnames, 1000);
 
   function initializeEventsInsidePopupUI() {
     hostnamesElement.addEventListener("keyup", () => {
