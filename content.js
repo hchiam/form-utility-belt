@@ -629,13 +629,7 @@ ${triggerClick}${setValue}${triggerChange}`;
       formInputElement.name
     ) {
       allowedValues = [...$$(`input[name="${formInputElement.name}"]`)].map(
-        (r, i) => {
-          if (r.value && r.value !== "on") {
-            return r.value;
-          } else {
-            return { index: i, name: formInputElement.name, text: r.innerText };
-          }
-        }
+        (r, i) => ({ index: i, name: formInputElement.name, text: r.innerText })
       );
       allowedValues.push({ index: -1, name: formInputElement.name, text: "" }); // case of all empty
     } else if (
@@ -645,7 +639,7 @@ ${triggerClick}${setValue}${triggerChange}`;
         formInputElement.type === "text" ||
         formInputElement.type === "textarea") &&
       formInputElement.value &&
-      !/test\d*/.test(String(formInputElement.value))
+      !/^test\d*?$/.test(String(formInputElement.value))
     ) {
       // use input value manually set in the form as the only allowed value:
       allowedValues = [formInputElement.value];
@@ -745,7 +739,7 @@ ${triggerClick}${setValue}${triggerChange}`;
     const valuesArray = [...defaultValues];
     if (inputElement.tagName === "TEXTAREA") {
       const useManualValue =
-        defaultValues.length && !/test\d*/.test(String(defaultValues[0]));
+        defaultValues.length && !/^test\d*?$/.test(String(defaultValues[0]));
       return useManualValue ? defaultValues : [`test${data.comboAt}`, ""];
     } else if (inputElement.tagName !== "INPUT") {
       return valuesArray;
@@ -770,7 +764,7 @@ ${triggerClick}${setValue}${triggerChange}`;
         return valuesArray;
       case "text":
         const useManualValue =
-          defaultValues.length && !/test\d*/.test(String(defaultValues[0]));
+          defaultValues.length && !/^test\d*?$/.test(String(defaultValues[0]));
         return useManualValue ? defaultValues : [`test${data.comboAt}`, ""];
       case "time":
       case "url":
