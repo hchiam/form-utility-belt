@@ -629,13 +629,7 @@ ${triggerClick}${setValue}${triggerChange}`;
       formInputElement.name
     ) {
       allowedValues = [...$$(`input[name="${formInputElement.name}"]`)].map(
-        (r, i) => {
-          if (r.value && r.value !== "on") {
-            return r.value;
-          } else {
-            return { index: i, name: formInputElement.name, text: r.innerText };
-          }
-        }
+        (r, i) => ({ index: i, name: formInputElement.name, text: r.innerText })
       );
       allowedValues.push({ index: -1, name: formInputElement.name, text: "" }); // case of all empty
     } else if (
