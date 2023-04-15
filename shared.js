@@ -144,3 +144,27 @@ export function beep() {
   );
   sound.play();
 }
+
+export function isZipCode(text) {
+  return /^(please\s+)?(enter|type|provide|give)?\s*?(us\s+)?(your\s+)?zip\s*?(code)?\s*?:?\s*?$/i.test(
+    text
+  );
+}
+
+export function isPostalCode(text) {
+  return /^(please\s+)?(enter|type|provide|give)?\s*?(us\s+)?(your\s+)?postal\s*?(code)?\s*?:?\s*?$/i.test(
+    text
+  );
+}
+
+export function isPOBox(text) {
+  return /^(please\s+)?(enter|type|provide|give)?\s*?(us\s+)?(your\s+)?p\.?o\.?\s*?(box)?\s*?:?\s*?$/i.test(
+    text
+  );
+}
+
+export function isTelephoneNumber(text) {
+  return /^(please\s+)?(enter|type|provide|give)?\s*?(us\s+)?(your\s+)?(tel|cell|phone|telephone|cellphone|number)\s*(phone|number)?\s*?:?\s*?$/i.test(
+    text
+  );
+}

@@ -4,6 +4,10 @@ import {
   getComboNumberFromValues,
   getValuesFromComboNumber,
   getRemainingAllowedValuesFromComboNumber,
+  isZipCode,
+  isPostalCode,
+  isPOBox,
+  isTelephoneNumber,
 } from "./shared.js";
 
 let fails = 0;
@@ -199,6 +203,48 @@ test(isAllowedHostname(["surge.sh"], ["test", "a", "b", "*"]), true);
     getRemainingAllowedValuesFromComboNumber(8, [[...numbers], [...numbers]]),
     [[3], [3]]
   );
+
+  test(isZipCode("zip Code :  "), true);
+  test(isZipCode("Zip Code:"), true);
+  test(isZipCode("ZIP"), true);
+  test(isZipCode("Your ZIP: "), true);
+  test(isZipCode("Please enter your ZIP Code:  "), true);
+  test(isZipCode("Please type your ZIP Code:  "), true);
+  test(isZipCode("Please provide us your ZIP Code:  "), true);
+  test(isZipCode("Please give your ZIP Code:  "), true);
+  test(isZipCode("Zipper color:"), false);
+  test(isPostalCode("Postal Code :  "), true);
+  test(isPostalCode("Postal"), true);
+  test(isPostalCode("Your postal code: "), true);
+  test(isPostalCode("Please enter your Postal Code:  "), true);
+  test(isPostalCode("Please type your Postal Code:  "), true);
+  test(isPostalCode("Please provide us your Postal Code:  "), true);
+  test(isPostalCode("Please give your Postal Code:  "), true);
+  test(isPOBox("PO Box :  "), true);
+  test(isPOBox("P.O. Box:"), true);
+  test(isPOBox("PO"), true);
+  test(isPOBox("P.O."), true);
+  test(isPOBox("Your PO Box: "), true);
+  test(isPOBox("PO Boxington:"), false);
+  test(isPOBox("Please enter your P.O. Box:  "), true);
+  test(isPOBox("Please type your P.O. Box:  "), true);
+  test(isPOBox("Please provide us your P.O. Box:  "), true);
+  test(isPOBox("Please give your P.O. Box:  "), true);
+  test(isTelephoneNumber("tel number :  "), true);
+  test(isTelephoneNumber("telephone:"), true);
+  test(isTelephoneNumber("phone:"), true);
+  test(isTelephoneNumber("cell:"), true);
+  test(isTelephoneNumber("cellphone:"), true);
+  test(isTelephoneNumber("cell phone:"), true);
+  test(isTelephoneNumber("tel:"), true);
+  test(isTelephoneNumber("your number:"), true);
+  test(isTelephoneNumber("Your telephone number: "), true);
+  test(isTelephoneNumber("Tell us about yourself: "), false);
+  test(isTelephoneNumber("Hotel name:"), false);
+  test(isTelephoneNumber("Please enter your telephone number:  "), true);
+  test(isTelephoneNumber("Please type your telephone number:  "), true);
+  test(isTelephoneNumber("Please provide us your telephone number:  "), true);
+  test(isTelephoneNumber("Please give your telephone number:  "), true);
 })();
 
 if (fails > 0) {
