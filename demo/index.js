@@ -30,6 +30,47 @@ submit?.addEventListener("click", (e) => {
   }
 });
 
+$(".zipcode").addEventListener("change", function () {
+  if (this.value && (isNaN(this.value) || this.value.length !== 5)) {
+    submit.disabled = true;
+  }
+});
+$("#zipcode").addEventListener("change", function () {
+  if (this.value && (isNaN(this.value) || this.value.length !== 5)) {
+    submit.disabled = true;
+  }
+});
+$(".postalcode").addEventListener("change", function () {
+  if (this.value && !/^\w\d\w ?\d\w\d$/i.test(this.value)) {
+    submit.disabled = true;
+  }
+});
+$("#postalcode").addEventListener("change", function () {
+  if (this.value && !/^\w\d\w ?\d\w\d$/i.test(this.value)) {
+    submit.disabled = true;
+  }
+});
+$(".pobox").addEventListener("change", function () {
+  if (this.value && (isNaN(this.value) || this.value.length !== 5)) {
+    submit.disabled = true;
+  }
+});
+$("#pobox").addEventListener("change", function () {
+  if (this.value && (isNaN(this.value) || this.value.length !== 5)) {
+    submit.disabled = true;
+  }
+});
+$(".telephone").addEventListener("change", function () {
+  if (this.value && !/^[\d -\.\)\(]+$/.test(this.value)) {
+    submit.disabled = true;
+  }
+});
+$("#telephone").addEventListener("change", function () {
+  if (this.value && !/^[\d +-x\.\)\(]+$/.test(this.value)) {
+    submit.disabled = true;
+  }
+});
+
 function isVisible(element) {
   if (!element) return false;
   const computedStyles = getComputedStyle(element);
