@@ -611,7 +611,6 @@ ${triggerClick}${setValue}${triggerChange}`;
           : [];
       allAllowedValues.push([...forSureAllowed, ...fallbackValues]);
     });
-    console.log("allAllowedValues", allAllowedValues);
     return allAllowedValues;
   }
 
@@ -686,7 +685,6 @@ ${triggerClick}${setValue}${triggerChange}`;
     } else if (formInputElement.tagName !== "INPUT") {
       return ["test", ""];
     } else if (!formInputElement.getAttribute("type")) {
-      console.log("got in");
       return getValuesForIndirectType(formInputElement);
     }
     const now = new Date();
