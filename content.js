@@ -611,6 +611,7 @@ ${triggerClick}${setValue}${triggerChange}`;
           : [];
       allAllowedValues.push([...forSureAllowed, ...fallbackValues]);
     });
+    console.log("allAllowedValues", allAllowedValues);
     return allAllowedValues;
   }
 
@@ -684,6 +685,9 @@ ${triggerClick}${setValue}${triggerChange}`;
       return ["test", ""];
     } else if (formInputElement.tagName !== "INPUT") {
       return ["test", ""];
+    } else if (!formInputElement.getAttribute("type")) {
+      console.log("got in");
+      return getValuesForIndirectType(formInputElement);
     }
     const now = new Date();
     const year = now.getFullYear();
@@ -732,6 +736,41 @@ ${triggerClick}${setValue}${triggerChange}`;
       default:
         return ["test", ""];
     }
+  }
+
+  function getValuesForIndirectType(input) {
+    const fallback = ["test", ""];
+    if (!input) return fallback;
+
+    let label = null;
+    let wrapper = input.parentElement;
+    let prev = input.previousElementSibling;
+    // try finding label with for="id":
+    label = $(`label[for="${input.id}"]`);
+    // try finding wrapping label:
+    if (!label) label = wrapper && wrapper.tagName === "LABEL" ? wrapper : null;
+    // try finding wrapping p:
+    if (!label) label = wrapper && wrapper.tagName === "P" ? wrapper : null;
+    // try finding preceding label or p:
+    if (!label) label = prev && prev.tagName === "LABEL" ? prev : null;
+    if (!label) label = prev && prev.tagName === "P" ? prev : null;
+
+    if (!label) return fallback;
+
+    if (shared.isZipCode(label.innerText)) {
+      return ["12345", ""];
+    }
+    if (shared.isPostalCode(label.innerText)) {
+      return ["H0H0H0", ""];
+    }
+    if (shared.isPOBox(label.innerText)) {
+      return ["12345", ""];
+    }
+    if (shared.isTelephoneNumber(label.innerText)) {
+      return ["2345678901", ""];
+    }
+
+    return fallback;
   }
 
   /** must return an array */
