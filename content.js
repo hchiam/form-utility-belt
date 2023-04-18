@@ -55,6 +55,9 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
     const isUserGenerated = event.isTrusted;
     if (!isUserGenerated) return;
 
+    const isFileInput = event.target.type === "file";
+    if (isFileInput) return;
+
     data.record = iifeStart + recordPrefix + iifeEnd;
     data.recordIndex = 0;
     data.summary = "";
@@ -83,6 +86,9 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
         element.style.visibility === "hidden" ||
         element.style.display === "none";
       if (isHidden) return;
+
+      const isFileInput = element.type === "file";
+      if (isFileInput) return;
 
       const thisSelector = getThisSelector(element);
 
@@ -145,10 +151,13 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       const dotValue = dotValueForType(type) || "value";
       const selector = action.selector;
       const nth = action.index ? `[${action.index}]` : "[0]";
-      const value =
+      let value =
         typeof action.value === "string"
           ? "`" + action.value.replace(/`/g, "\\`") + "`"
           : action.value;
+      if (element.type === "date") {
+        value = `new Date(\`${String(action.value).replace(/`/g, "\\`")}\`)`;
+      }
 
       const isRadioOrCheckbox = dotValue === "checked";
 
@@ -181,8 +190,8 @@ ${triggerClick}${setValue}${triggerChange}`;
       (element.getAttribute("class")?.trim()
         ? "." + element.getAttribute("class").trim().split(" ").join(".")
         : "") +
-      (element.tagName === "INPUT" && element.type
-        ? `[type="${element.type}"]`
+      (element.tagName === "INPUT" && element.getAttribute("type")
+        ? `[type="${element.getAttribute("type")}"]`
         : "");
 
     return thisSelector;
@@ -636,7 +645,7 @@ ${triggerClick}${setValue}${triggerChange}`;
       (formInputElement.tagName === "INPUT" ||
         formInputElement.tagName === "TEXTAREA") &&
       (!formInputElement.type ||
-        formInputElement.type === "text" ||
+        formInputElement.type === "text" || // formInputElement.getAttribute("type") === "text"
         formInputElement.type === "textarea") &&
       formInputElement.value &&
       !/^test\d*?$/.test(String(formInputElement.value))
