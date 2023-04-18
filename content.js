@@ -181,8 +181,8 @@ ${triggerClick}${setValue}${triggerChange}`;
       (element.getAttribute("class")?.trim()
         ? "." + element.getAttribute("class").trim().split(" ").join(".")
         : "") +
-      (element.tagName === "INPUT" && element.type
-        ? `[type="${element.type}"]`
+      (element.tagName === "INPUT" && element.getAttribute("type")
+        ? `[type="${element.getAttribute("type")}"]`
         : "");
 
     return thisSelector;
@@ -636,7 +636,7 @@ ${triggerClick}${setValue}${triggerChange}`;
       (formInputElement.tagName === "INPUT" ||
         formInputElement.tagName === "TEXTAREA") &&
       (!formInputElement.type ||
-        formInputElement.type === "text" ||
+        formInputElement.type === "text" || // formInputElement.getAttribute("type") === "text"
         formInputElement.type === "textarea") &&
       formInputElement.value &&
       !/^test\d*?$/.test(String(formInputElement.value))
