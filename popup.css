@@ -145,6 +145,11 @@ button:disabled,
   white-space: pre;
 }
 
+#time_estimate {
+  margin: 0 0 -1rem;
+  padding: 0;
+}
+
 #combos,
 #submit_combos {
   display: inline;

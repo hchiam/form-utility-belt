@@ -12,6 +12,7 @@ export const defaultData = {
   summary: "",
   continueAutomation: false,
   submitRetriesLeft: 1,
+  numberOfInputs: 0,
   comboCount: 0,
   comboAt: 0,
   showProgressBar: false,

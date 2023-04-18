@@ -331,6 +331,7 @@ ${triggerClick}${setValue}${triggerChange}`;
     const allAllowedValues =
       currentlyAllowedValues || getAllAllowedValuesOfAllInputs(allInputs);
     data.submitRetriesLeft = 1; // re-init
+    data.numberOfInputs = allInputs?.length || 0;
     data.comboCount = allAllowedValues
       .map((x) => x.length) // otherwise .reduce returns NaN because initialValue=1 wouldn't have .length
       .reduce((a, b) => (b ? a * b : a));
