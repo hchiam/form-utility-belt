@@ -17,6 +17,7 @@
   const isRequiredSelectorElement = document.querySelector(
     "#is_required_selector"
   );
+  const timeEstimateElement = document.querySelector("#time_estimate");
   const combosElement = document.querySelector("#combos");
   const submitCombosElement = document.querySelector("#submit_combos");
   const submitCombosLabelElement = document.querySelector(
@@ -284,6 +285,18 @@ Do you still want to continue?`);
       const value = Number(data.comboAt || 0) + 1; // +1 because counts from 0
       const percent = Math.round((100 * value) / max);
       setCSSVariable("--progress", `${percent}%`, combosElement);
+
+      const submitDelayMs = 1000;
+      const inputSleepMs = 100;
+      const maxMsLeft =
+        max * submitDelayMs + max * data.numberOfInputs * inputSleepMs;
+      const msLeft =
+        maxMsLeft -
+        (value * submitDelayMs + value * data.numberOfInputs * inputSleepMs);
+      const sLeft = msLeft / 1000;
+      const mLeft = Math.round((sLeft / 60) * 10) / 10;
+      const timeEstimate = `Less than ${mLeft} minutes remaining:`;
+      timeEstimateElement.innerText = timeEstimate ? timeEstimate : "";
     });
   }
 
