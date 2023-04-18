@@ -1,7 +1,7 @@
 {
   "name": "Form Utility Belt",
   "description": "Some convenience tools for doing quality assurance of forms.",
-  "version": "2.4.2",
+  "version": "2.4.3",
   "manifest_version": 3,
   "icons": {
     "128": "icon_128.png"
