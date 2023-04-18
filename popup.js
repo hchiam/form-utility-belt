@@ -296,7 +296,8 @@ Do you still want to continue?`);
       const sLeft = msLeft / 1000;
       const mLeft = Math.round((sLeft / 60) * 10) / 10;
       const timeEstimate = `Less than ${mLeft} minutes remaining:`;
-      timeEstimateElement.innerText = timeEstimate ? timeEstimate : "";
+      timeEstimateElement.innerText =
+        mLeft && !isNaN(mLeft) ? timeEstimate : "";
     });
   }
 
