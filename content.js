@@ -151,10 +151,13 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
       const dotValue = dotValueForType(type) || "value";
       const selector = action.selector;
       const nth = action.index ? `[${action.index}]` : "[0]";
-      const value =
+      let value =
         typeof action.value === "string"
           ? "`" + action.value.replace(/`/g, "\\`") + "`"
           : action.value;
+      if (element.type === "date") {
+        value = `new Date(\`${String(action.value).replace(/`/g, "\\`")}\`)`;
+      }
 
       const isRadioOrCheckbox = dotValue === "checked";
 
