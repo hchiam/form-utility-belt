@@ -55,6 +55,9 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
     const isUserGenerated = event.isTrusted;
     if (!isUserGenerated) return;
 
+    const isFileInput = event.target.type === "file";
+    if (isFileInput) return;
+
     data.record = iifeStart + recordPrefix + iifeEnd;
     data.recordIndex = 0;
     data.summary = "";
@@ -83,6 +86,9 @@ async function sleep(ms){await new Promise(r=>setTimeout(r,ms||100));};`;
         element.style.visibility === "hidden" ||
         element.style.display === "none";
       if (isHidden) return;
+
+      const isFileInput = element.type === "file";
+      if (isFileInput) return;
 
       const thisSelector = getThisSelector(element);
 
