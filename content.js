@@ -727,7 +727,7 @@ ${triggerClick}${setValue}${triggerChange}`;
       case "color":
         return ["#ff0000"]; // '' isn't allowed for color
       case "date":
-        return [now.toISOString()]; // '' isn't allowed for date
+        return [now.toISOString()]; // '' isn't allowed for date, and data.allAllowedValues can't store Date objects
       case "datetime-local":
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         return [now.toISOString().slice(0, 16), ""];
