@@ -8,6 +8,7 @@ import {
   isPostalCode,
   isPOBox,
   isTelephoneNumber,
+  isYear,
 } from "./shared.js";
 
 let fails = 0;
@@ -245,6 +246,9 @@ test(isAllowedHostname(["surge.sh"], ["test", "a", "b", "*"]), true);
   test(isTelephoneNumber("Please type your telephone number:  "), true);
   test(isTelephoneNumber("Please provide us your telephone number:  "), true);
   test(isTelephoneNumber("Please give your telephone number:  "), true);
+  test(isYear("Please enter your date of birth:  "), true);
+  test(isYear("Your birth date: "), true);
+  test(isYear("Year : "), true);
 })();
 
 if (fails > 0) {

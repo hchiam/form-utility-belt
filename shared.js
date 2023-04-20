@@ -169,3 +169,9 @@ export function isTelephoneNumber(text) {
     text
   );
 }
+
+export function isYear(text) {
+  return /^(please\s+)?(enter|type|provide|give)?\s*?(us\s+)?(your\s+)?(birth\s+)?(year|age|date)\s*?(of birth)?\s*?:?\s*?$/i.test(
+    text
+  );
+}

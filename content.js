@@ -706,6 +706,12 @@ ${triggerClick}${setValue}${triggerChange}`;
     } else if (!formInputElement.getAttribute("type")) {
       return getValuesForIndirectType(formInputElement);
     }
+
+    console.log("1");
+    const possibleValues = getValuesForIndirectType(formInputElement);
+    if (possibleValues[0] !== "test") return possibleValues;
+    console.log("2", possibleValues, formInputElement);
+
     const now = new Date();
     const year = now.getFullYear();
     switch (formInputElement.type) {
@@ -740,8 +746,6 @@ ${triggerClick}${setValue}${triggerChange}`;
       case "tel":
         return ["2345678901", ""];
       case "text":
-        const possibleValues = getValuesForIndirectType(formInputElement);
-        if (possibleValues[0] !== "test") return possibleValues;
         return ["test", ""];
       case "time":
         return [now.toISOString().substring(11, 16), ""];
@@ -757,23 +761,11 @@ ${triggerClick}${setValue}${triggerChange}`;
     }
   }
 
-  function getValuesForIndirectType(input) {
+  function getValuesForIndirectType(input, previousSubmitValue = null) {
     const fallback = ["test", ""];
     if (!input) return fallback;
 
-    let label = null;
-    let wrapper = input.parentElement;
-    let prev = input.previousElementSibling;
-    // try finding label with for="id":
-    label = $(`label[for="${input.id}"]`);
-    // try finding wrapping label:
-    if (!label) label = wrapper && wrapper.tagName === "LABEL" ? wrapper : null;
-    // try finding wrapping p:
-    if (!label) label = wrapper && wrapper.tagName === "P" ? wrapper : null;
-    // try finding preceding label or p:
-    if (!label) label = prev && prev.tagName === "LABEL" ? prev : null;
-    if (!label) label = prev && prev.tagName === "P" ? prev : null;
-
+    let label = getIndirectLabel(input);
     if (!label) return fallback;
 
     if (shared.isZipCode(label.innerText)) {
@@ -788,8 +780,54 @@ ${triggerClick}${setValue}${triggerChange}`;
     if (shared.isTelephoneNumber(label.innerText)) {
       return ["2345678901", ""];
     }
+    console.log("got here");
+    if (
+      shared.isYear(input.getAttribute("placeholder")) ||
+      shared.isYear(label.innerText)
+    ) {
+      console.log(
+        "detected year",
+        previousSubmitValue,
+        getYearValues(previousSubmitValue)
+      );
+      return getYearValues(previousSubmitValue);
+    }
 
     return fallback;
+  }
+
+  function getYearValues(previousSubmitValue) {
+    if (
+      (typeof previousSubmitValue !== "text" &&
+        typeof previousSubmitValue !== "number") ||
+      isNaN(Number(previousSubmitValue))
+    ) {
+      return [1900, ""];
+    } else {
+      return [Number(previousSubmitValue), ""];
+    }
+  }
+
+  function getIndirectLabel(input) {
+    let label = null;
+
+    const wrapper = input.parentElement;
+    const prev = input.previousElementSibling;
+    const placeholder = input.getAttribute("placeholder");
+
+    // try finding label with for="id":
+    label = $(`label[for="${input.id}"]`);
+    // try finding wrapping label:
+    if (!label) label = wrapper && wrapper.tagName === "LABEL" ? wrapper : null;
+    // try finding wrapping p:
+    if (!label) label = wrapper && wrapper.tagName === "P" ? wrapper : null;
+    // try finding preceding label or p:
+    if (!label) label = prev && prev.tagName === "LABEL" ? prev : null;
+    if (!label) label = prev && prev.tagName === "P" ? prev : null;
+    // try checking placeholder:
+    if (!label) label = placeholder ? placeholder : null;
+
+    return label;
   }
 
   /** must return an array */
@@ -801,6 +839,14 @@ ${triggerClick}${setValue}${triggerChange}`;
       return useManualValue ? defaultValues : [`test${data.comboAt}`, ""];
     } else if (inputElement.tagName !== "INPUT") {
       return valuesArray;
+    } else if (!inputElement.getAttribute("type")) {
+      return getValuesForIndirectType(inputElement, valuesArray[0]);
+    } else if (
+      shared.isYear(inputElement.getAttribute("placeholder")) ||
+      shared.isYear(getIndirectLabel(inputElement).innerText)
+    ) {
+      const yearDiff = data.comboAt % (new Date().getFullYear() - 1900);
+      return getYearValues(Number(valuesArray[0]) + yearDiff);
     }
     switch (inputElement.type) {
       case "checkbox":
