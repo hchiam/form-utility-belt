@@ -13,6 +13,7 @@ export const defaultData = {
   continueAutomation: false,
   submitRetriesLeft: 1,
   numberOfInputs: 0,
+  allAllowedValues: [],
   comboCount: 0,
   comboAt: 0,
   showProgressBar: false,
@@ -166,6 +167,12 @@ export function isPOBox(text) {
 
 export function isTelephoneNumber(text) {
   return /^(please\s+)?(enter|type|provide|give)?\s*?(us\s+)?(your\s+)?(tel|cell|phone|telephone|cellphone|number)\s*(phone|number)?\s*?:?\s*?$/i.test(
+    text
+  );
+}
+
+export function isYear(text) {
+  return /^(please\s+)?(enter|type|provide|give)?\s*?(us\s+)?(your\s+)?(birth\s+)?(year|age|date)\s*?(of birth)?\s*?:?\s*?$/i.test(
     text
   );
 }

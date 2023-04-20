@@ -64,6 +64,9 @@
         hostnamesElement.value = tabHostnames.join(",");
         hostnamesElement.dispatchEvent(new Event("keyup")); // trigger other updates
         shared.beep();
+        alert(
+          "Manually refresh the page to let the Form Utility Belt start recording steps."
+        );
       });
     });
     submitSelectorElement.addEventListener("keyup", () => {

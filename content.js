@@ -265,14 +265,21 @@ ${triggerClick}${setValue}${triggerChange}`;
       await sleep(10_000);
 
       const allInputs = getAllInputs();
-      const allAllowedValues = getAllAllowedValuesOfAllInputs(allInputs);
+      const allAllowedValues = data.allAllowedValues?.length
+        ? data.allAllowedValues
+        : getAllAllowedValuesOfAllInputs(allInputs);
 
       const remainingAllowedValues =
         shared.getRemainingAllowedValuesFromComboNumber(
           data.comboAt,
           allAllowedValues
         );
-      combos(remainingAllowedValues);
+      try {
+        await combos(remainingAllowedValues);
+      } catch (e) {
+        log(e);
+        stopAutomation();
+      }
     }
   }
 
@@ -286,11 +293,11 @@ ${triggerClick}${setValue}${triggerChange}`;
       return;
     }
 
-    shared.getData((updatedData) => {
+    shared.getData(async function (updatedData) {
       data = updatedData;
       try {
         if (request.message === "combos") {
-          combos();
+          await combos();
         } else {
           stopAutomation();
         }
@@ -303,6 +310,7 @@ ${triggerClick}${setValue}${triggerChange}`;
 
   function stopAutomation() {
     data.continueAutomation = false;
+    data.allAllowedValues = [];
     shared.setData(data);
     log("Trying to PAUSE combos automation.", new Date());
     resetTabIcon();
@@ -332,9 +340,10 @@ ${triggerClick}${setValue}${triggerChange}`;
       currentlyAllowedValues || getAllAllowedValuesOfAllInputs(allInputs);
     data.submitRetriesLeft = 1; // re-init
     data.numberOfInputs = allInputs?.length || 0;
+    data.allAllowedValues = allAllowedValues;
     data.comboCount = allAllowedValues
       .map((x) => x.length) // otherwise .reduce returns NaN because initialValue=1 wouldn't have .length
-      .reduce((a, b) => (b ? a * b : a));
+      .reduce((a, b) => (b ? a * b : a), 1);
     if (!currentlyAllowedValues) {
       data.comboAt = 0; // just starting (as opposed to continuing where left off)
       await shared.setData(data);
@@ -355,7 +364,11 @@ ${triggerClick}${setValue}${triggerChange}`;
       //   await tryAllLastValuesFirst(allInputs, allAllowedValues);
       //   resetAllInputs();
       // }
-      await recursivelyTryCombos(allInputs, allAllowedValues);
+      try {
+        await recursivelyTryCombos(allInputs, allAllowedValues);
+      } catch (e) {
+        log(e);
+      }
       log("COMBOS: list of allInputs", allInputs);
       stopAutomation();
     });
@@ -401,7 +414,7 @@ ${triggerClick}${setValue}${triggerChange}`;
     }
 
     // for each value of the current input:
-    for (let v = 0; v < allAllowedValues[indexOfCurrentInput].length; v++) {
+    for (let v = 0; v < allAllowedValues[indexOfCurrentInput]?.length; v++) {
       comboValuesIndices[indexOfCurrentInput] = v;
 
       const canRecurse = indexOfCurrentInput + 1 < allInputs.length;
@@ -469,8 +482,13 @@ ${triggerClick}${setValue}${triggerChange}`;
             value = true; // since we're not unchecking all in group
           }
 
+          const isDate = input?.type === "date";
+          if (isDate) {
+            value = new Date(value);
+          }
+
           const safeToClickOrChange =
-            !input.type || (input.type !== "file" && input.type !== "color");
+            !input?.type || (input.type !== "file" && input.type !== "color");
           const safeToClick =
             input?.type !== "checkbox" && input?.type !== "radio";
 
@@ -697,6 +715,10 @@ ${triggerClick}${setValue}${triggerChange}`;
     } else if (!formInputElement.getAttribute("type")) {
       return getValuesForIndirectType(formInputElement);
     }
+
+    const possibleValues = getValuesForIndirectType(formInputElement);
+    if (possibleValues[0] !== "test") return possibleValues;
+
     const now = new Date();
     const year = now.getFullYear();
     switch (formInputElement.type) {
@@ -705,7 +727,7 @@ ${triggerClick}${setValue}${triggerChange}`;
       case "color":
         return ["#ff0000"]; // '' isn't allowed for color
       case "date":
-        return [now]; // '' isn't allowed for date
+        return [now.toISOString()]; // '' isn't allowed for date, and data.allAllowedValues can't store Date objects
       case "datetime-local":
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         return [now.toISOString().slice(0, 16), ""];
@@ -746,23 +768,11 @@ ${triggerClick}${setValue}${triggerChange}`;
     }
   }
 
-  function getValuesForIndirectType(input) {
+  function getValuesForIndirectType(input, previousSubmitValue = null) {
     const fallback = ["test", ""];
     if (!input) return fallback;
 
-    let label = null;
-    let wrapper = input.parentElement;
-    let prev = input.previousElementSibling;
-    // try finding label with for="id":
-    label = $(`label[for="${input.id}"]`);
-    // try finding wrapping label:
-    if (!label) label = wrapper && wrapper.tagName === "LABEL" ? wrapper : null;
-    // try finding wrapping p:
-    if (!label) label = wrapper && wrapper.tagName === "P" ? wrapper : null;
-    // try finding preceding label or p:
-    if (!label) label = prev && prev.tagName === "LABEL" ? prev : null;
-    if (!label) label = prev && prev.tagName === "P" ? prev : null;
-
+    let label = getIndirectLabel(input);
     if (!label) return fallback;
 
     if (shared.isZipCode(label.innerText)) {
@@ -777,8 +787,48 @@ ${triggerClick}${setValue}${triggerChange}`;
     if (shared.isTelephoneNumber(label.innerText)) {
       return ["2345678901", ""];
     }
+    if (
+      shared.isYear(input.getAttribute("placeholder")) ||
+      shared.isYear(label.innerText)
+    ) {
+      return getYearValues(previousSubmitValue);
+    }
 
     return fallback;
+  }
+
+  function getYearValues(previousSubmitValue) {
+    if (
+      (typeof previousSubmitValue !== "text" &&
+        typeof previousSubmitValue !== "number") ||
+      isNaN(Number(previousSubmitValue))
+    ) {
+      return [1900, ""];
+    } else {
+      return [Number(previousSubmitValue), ""];
+    }
+  }
+
+  function getIndirectLabel(input) {
+    let label = null;
+
+    const wrapper = input.parentElement;
+    const prev = input.previousElementSibling;
+    const placeholder = input.getAttribute("placeholder");
+
+    // try finding label with for="id":
+    label = $(`label[for="${input.id}"]`);
+    // try finding wrapping label:
+    if (!label) label = wrapper && wrapper.tagName === "LABEL" ? wrapper : null;
+    // try finding wrapping p:
+    if (!label) label = wrapper && wrapper.tagName === "P" ? wrapper : null;
+    // try finding preceding label or p:
+    if (!label) label = prev && prev.tagName === "LABEL" ? prev : null;
+    if (!label) label = prev && prev.tagName === "P" ? prev : null;
+    // try checking placeholder:
+    if (!label) label = placeholder ? placeholder : null;
+
+    return label;
   }
 
   /** must return an array */
@@ -790,6 +840,14 @@ ${triggerClick}${setValue}${triggerChange}`;
       return useManualValue ? defaultValues : [`test${data.comboAt}`, ""];
     } else if (inputElement.tagName !== "INPUT") {
       return valuesArray;
+    } else if (!inputElement.getAttribute("type")) {
+      return getValuesForIndirectType(inputElement, valuesArray[0]);
+    } else if (
+      shared.isYear(inputElement.getAttribute("placeholder")) ||
+      shared.isYear(getIndirectLabel(inputElement)?.innerText)
+    ) {
+      const yearDiff = data.comboAt % (new Date().getFullYear() - 1900);
+      return getYearValues(Number(valuesArray[0]) + yearDiff);
     }
     switch (inputElement.type) {
       case "checkbox":
