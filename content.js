@@ -272,7 +272,12 @@ ${triggerClick}${setValue}${triggerChange}`;
           data.comboAt,
           allAllowedValues
         );
-      combos(remainingAllowedValues);
+      try {
+        await combos(remainingAllowedValues);
+      } catch (e) {
+        log(e);
+        stopAutomation();
+      }
     }
   }
 
@@ -286,11 +291,11 @@ ${triggerClick}${setValue}${triggerChange}`;
       return;
     }
 
-    shared.getData((updatedData) => {
+    shared.getData(async function (updatedData) {
       data = updatedData;
       try {
         if (request.message === "combos") {
-          combos();
+          await combos();
         } else {
           stopAutomation();
         }
@@ -334,7 +339,7 @@ ${triggerClick}${setValue}${triggerChange}`;
     data.numberOfInputs = allInputs?.length || 0;
     data.comboCount = allAllowedValues
       .map((x) => x.length) // otherwise .reduce returns NaN because initialValue=1 wouldn't have .length
-      .reduce((a, b) => (b ? a * b : a));
+      .reduce((a, b) => (b ? a * b : a), 1);
     if (!currentlyAllowedValues) {
       data.comboAt = 0; // just starting (as opposed to continuing where left off)
       await shared.setData(data);
@@ -355,7 +360,11 @@ ${triggerClick}${setValue}${triggerChange}`;
       //   await tryAllLastValuesFirst(allInputs, allAllowedValues);
       //   resetAllInputs();
       // }
-      await recursivelyTryCombos(allInputs, allAllowedValues);
+      try {
+        await recursivelyTryCombos(allInputs, allAllowedValues);
+      } catch (e) {
+        log(e);
+      }
       log("COMBOS: list of allInputs", allInputs);
       stopAutomation();
     });
@@ -401,7 +410,7 @@ ${triggerClick}${setValue}${triggerChange}`;
     }
 
     // for each value of the current input:
-    for (let v = 0; v < allAllowedValues[indexOfCurrentInput].length; v++) {
+    for (let v = 0; v < allAllowedValues[indexOfCurrentInput]?.length; v++) {
       comboValuesIndices[indexOfCurrentInput] = v;
 
       const canRecurse = indexOfCurrentInput + 1 < allInputs.length;
