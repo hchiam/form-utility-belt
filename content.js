@@ -482,8 +482,13 @@ ${triggerClick}${setValue}${triggerChange}`;
             value = true; // since we're not unchecking all in group
           }
 
+          const isDate = input?.type === "date";
+          if (isDate) {
+            value = new Date(value);
+          }
+
           const safeToClickOrChange =
-            !input.type || (input.type !== "file" && input.type !== "color");
+            !input?.type || (input.type !== "file" && input.type !== "color");
           const safeToClick =
             input?.type !== "checkbox" && input?.type !== "radio";
 
@@ -722,7 +727,7 @@ ${triggerClick}${setValue}${triggerChange}`;
       case "color":
         return ["#ff0000"]; // '' isn't allowed for color
       case "date":
-        return [now]; // '' isn't allowed for date
+        return [now.toISOString()]; // '' isn't allowed for date
       case "datetime-local":
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         return [now.toISOString().slice(0, 16), ""];
