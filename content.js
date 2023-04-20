@@ -740,6 +740,8 @@ ${triggerClick}${setValue}${triggerChange}`;
       case "tel":
         return ["2345678901", ""];
       case "text":
+        const possibleValues = getValuesForIndirectType(formInputElement);
+        if (possibleValues[0] !== "test") return possibleValues;
         return ["test", ""];
       case "time":
         return [now.toISOString().substring(11, 16), ""];
