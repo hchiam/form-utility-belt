@@ -265,7 +265,9 @@ ${triggerClick}${setValue}${triggerChange}`;
       await sleep(10_000);
 
       const allInputs = getAllInputs();
-      const allAllowedValues = getAllAllowedValuesOfAllInputs(allInputs);
+      const allAllowedValues = data.allAllowedValues?.length
+        ? data.allAllowedValues
+        : getAllAllowedValuesOfAllInputs(allInputs);
 
       const remainingAllowedValues =
         shared.getRemainingAllowedValuesFromComboNumber(
@@ -308,6 +310,7 @@ ${triggerClick}${setValue}${triggerChange}`;
 
   function stopAutomation() {
     data.continueAutomation = false;
+    data.allAllowedValues = [];
     shared.setData(data);
     log("Trying to PAUSE combos automation.", new Date());
     resetTabIcon();
@@ -337,6 +340,7 @@ ${triggerClick}${setValue}${triggerChange}`;
       currentlyAllowedValues || getAllAllowedValuesOfAllInputs(allInputs);
     data.submitRetriesLeft = 1; // re-init
     data.numberOfInputs = allInputs?.length || 0;
+    data.allAllowedValues = allAllowedValues;
     data.comboCount = allAllowedValues
       .map((x) => x.length) // otherwise .reduce returns NaN because initialValue=1 wouldn't have .length
       .reduce((a, b) => (b ? a * b : a), 1);

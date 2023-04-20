@@ -13,6 +13,7 @@ export const defaultData = {
   continueAutomation: false,
   submitRetriesLeft: 1,
   numberOfInputs: 0,
+  allAllowedValues: [],
   comboCount: 0,
   comboAt: 0,
   showProgressBar: false,
