@@ -707,10 +707,8 @@ ${triggerClick}${setValue}${triggerChange}`;
       return getValuesForIndirectType(formInputElement);
     }
 
-    console.log("1");
     const possibleValues = getValuesForIndirectType(formInputElement);
     if (possibleValues[0] !== "test") return possibleValues;
-    console.log("2", possibleValues, formInputElement);
 
     const now = new Date();
     const year = now.getFullYear();
@@ -780,16 +778,10 @@ ${triggerClick}${setValue}${triggerChange}`;
     if (shared.isTelephoneNumber(label.innerText)) {
       return ["2345678901", ""];
     }
-    console.log("got here");
     if (
       shared.isYear(input.getAttribute("placeholder")) ||
       shared.isYear(label.innerText)
     ) {
-      console.log(
-        "detected year",
-        previousSubmitValue,
-        getYearValues(previousSubmitValue)
-      );
       return getYearValues(previousSubmitValue);
     }
 
@@ -843,7 +835,7 @@ ${triggerClick}${setValue}${triggerChange}`;
       return getValuesForIndirectType(inputElement, valuesArray[0]);
     } else if (
       shared.isYear(inputElement.getAttribute("placeholder")) ||
-      shared.isYear(getIndirectLabel(inputElement).innerText)
+      shared.isYear(getIndirectLabel(inputElement)?.innerText)
     ) {
       const yearDiff = data.comboAt % (new Date().getFullYear() - 1900);
       return getYearValues(Number(valuesArray[0]) + yearDiff);
